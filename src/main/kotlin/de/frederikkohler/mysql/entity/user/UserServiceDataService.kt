@@ -6,7 +6,7 @@ import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-class UserServiceImpl : UserService {
+class UserServiceDataService : UserService {
 
     private fun resultRowToUser(row: ResultRow):User{
         return User(
@@ -45,5 +45,9 @@ class UserServiceImpl : UserService {
 
     override suspend fun getUser(id: Int): User? = dbQuery{
         Users.select { (Users.id eq id) }.map { resultRowToUser(it) }.singleOrNull()
+    }
+
+    override suspend fun findUserByUsername(username: String): User? = dbQuery {
+        Users.select { (Users.username eq username) }.map { resultRowToUser(it) }.singleOrNull()
     }
 }

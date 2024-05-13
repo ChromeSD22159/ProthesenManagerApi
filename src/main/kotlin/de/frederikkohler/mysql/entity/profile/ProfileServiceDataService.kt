@@ -6,7 +6,7 @@ import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-class ProfileServiceImpl : ProfileService {
+class ProfileServiceDataService : ProfileService {
 
     private fun resultRowToProfile(row: ResultRow):Profile{
         return Profile(

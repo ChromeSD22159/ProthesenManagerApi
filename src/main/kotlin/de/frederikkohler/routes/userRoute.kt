@@ -12,7 +12,7 @@ import io.ktor.server.routing.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 
 fun Routing.userRoute(userService: UserService, profileService: ProfileService) {
-    post("/user/create") {
+    post("/user/create"){
         val user = call.receive<User>()
 
         try {
@@ -35,7 +35,7 @@ fun Routing.userRoute(userService: UserService, profileService: ProfileService) 
         }
     }
 
-    get("/users") {
+    get("/users"){
         val users=userService.getUsers()
         call.respond(HttpStatusCode.OK,users)
     }
