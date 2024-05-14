@@ -14,7 +14,7 @@ fun Routing.profileRoute(profileService: ProfileService) {
     put("/profile/{id}"){
         try {
             val user=call.receive<Profile>()
-            v   al result=profileService.updateProfile(user)
+            val result=profileService.updateProfile(user)
             if (result){
                 call.respond(HttpStatusCode.OK,"Update successful")
             }else{
