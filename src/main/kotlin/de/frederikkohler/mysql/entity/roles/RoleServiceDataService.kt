@@ -6,6 +6,7 @@ import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
+// TODO: ADD ROLE ROUTES
 class RoleServiceDataService: RoleService {
     private fun resultRowToRole(row: ResultRow): Role {
         return Role(
