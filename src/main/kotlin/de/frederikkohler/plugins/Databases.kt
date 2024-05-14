@@ -1,17 +1,19 @@
 package de.frederikkohler.plugins
 
-import de.frederikkohler.model.Users
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import de.frederikkohler.model.Profiles
+import de.frederikkohler.model.*
+import de.frederikkohler.mysql.entity.roles.RoleService
+import de.frederikkohler.mysql.entity.roles.RoleServiceDataService
+import de.frederikkohler.mysql.entity.user.UserService
+import de.frederikkohler.mysql.entity.user.UserServiceDataService
 import io.ktor.server.application.*
 import kotlinx.coroutines.Dispatchers
-import org.flywaydb.core.Flyway
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.Schema
-import org.jetbrains.exposed.sql.SchemaUtils
+import kotlinx.coroutines.launch
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.koin.ktor.ext.get
 import java.sql.SQLException
 
 fun Application.configureDatabases(): Database {
@@ -22,12 +24,16 @@ fun Application.configureDatabases(): Database {
         throw e
     }
 
-
-
-    println("Connection to database successfully established.")
-
     transaction(db){
-        SchemaUtils.create(Users, Profiles)
+        SchemaUtils.create(
+            Users,
+            Profiles,
+            Roles
+        )
+
+        launch(Dispatchers.IO) {
+            setupTableEntries()
+        }
     }
 
     return db
@@ -37,18 +43,12 @@ class DatabasesManager {
     var connection: Database? = null
 
     init {
-        val port = 8889
-        val databaseName = "test"
-        val host = "127.0.0.1"
-        val username = "root"
-        val password = "root"
-
         connection = getDatabaseInstance()
     }
 
     private fun getDatabaseInstance(
         port: Int? = 8889,
-        databaseName: String? = "CommunityTest",
+        databaseName: String? = "ProthesenManagerApiDev",
         host: String? = "localhost",
         username: String? = "root",
         password: String? = "root"
@@ -72,6 +72,15 @@ private fun provideDataSource(url:String,driverClass:String):HikariDataSource{
         validate()
     }
     return HikariDataSource(hikariConfig)
+}
+
+private fun setupTableEntries() {
+    val users = listOf(
+        User(username = "info@frederikkohler.de", password = "Fr3d3rik"),
+        User(username = "nico.kohler@frederikkohler.de", password = "Schueler277!"),
+    )
+    UserServiceDataService().addUsersWhenNoRulesExist(users)
+    RoleServiceDataService().addRolesWhenNoRulesExist(listOf("User", "Admin"))
 }
 
 suspend fun <T> dbQuery(block:suspend ()->T):T{
