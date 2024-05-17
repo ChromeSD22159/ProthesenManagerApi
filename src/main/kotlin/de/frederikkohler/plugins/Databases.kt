@@ -1,8 +1,6 @@
 package de.frederikkohler.plugins
 
-import de.frederikkohler.model.*
-import de.frederikkohler.mysql.entity.roles.RoleServiceDataService
-import de.frederikkohler.mysql.entity.user.UserServiceDataService
+import de.frederikkohler.model.user.*
 import de.frederikkohler.service.DatabasesManager
 import io.ktor.server.application.*
 import kotlinx.coroutines.Dispatchers
@@ -23,8 +21,12 @@ fun Application.configureDatabases(): Database {
     transaction(db){
         SchemaUtils.create(
             Users,
-            Profiles,
-            Roles
+            UserProfiles,
+            UserRoles,
+            UserVerifyCodes,
+            UserFollowers,
+            UserFollows,
+            Posts
         )
 
         launch(Dispatchers.IO) {

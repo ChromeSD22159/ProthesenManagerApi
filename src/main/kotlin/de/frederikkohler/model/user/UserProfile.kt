@@ -1,9 +1,8 @@
-package de.frederikkohler.model
+package de.frederikkohler.model.user
 
-import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 
-data class Profile(
+data class UserProfile(
     val id:Int=0,
     val userId:Int=0,
     val firstname: String,
@@ -11,7 +10,7 @@ data class Profile(
     val email: String,
 )
 
-object Profiles: Table(){
+object UserProfiles: Table(){
     val id= integer("id").autoIncrement()
     val userId = integer("user_id") // .references(Users.id, onDelete = ReferenceOption.CASCADE)
     val firstname= varchar("firstname",255)

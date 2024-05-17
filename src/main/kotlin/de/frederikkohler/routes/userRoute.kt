@@ -1,8 +1,8 @@
 package de.frederikkohler.routes
 
-import de.frederikkohler.model.Profile
-import de.frederikkohler.model.User
-import de.frederikkohler.mysql.entity.profile.ProfileService
+import de.frederikkohler.model.user.UserProfile
+import de.frederikkohler.model.user.User
+import de.frederikkohler.mysql.entity.user.UserProfileService
 import de.frederikkohler.mysql.entity.user.UserService
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -11,7 +11,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 
-fun Routing.userRoute(userService: UserService, profileService: ProfileService) {
+fun Routing.userRoute(userService: UserService, userProfileService: UserProfileService) {
     post("/user/create"){
         val user = call.receive<User>()
 
@@ -21,8 +21,8 @@ fun Routing.userRoute(userService: UserService, profileService: ProfileService) 
             result?.let {
                 call.respond(HttpStatusCode.Created, it)
 
-                profileService.addProfile(
-                    Profile(
+                userProfileService.addProfile(
+                    UserProfile(
                         userId = it.id,
                         firstname = "",
                         lastname = "",
@@ -62,7 +62,7 @@ fun Routing.userRoute(userService: UserService, profileService: ProfileService) 
             if(user != null) {
                 val deleteResult = userService.deleteUser(user)
 
-                profileService.deleteProfile(user.id)
+                userProfileService.deleteProfile(user.id)
 
                 if (deleteResult) {
                     call.respond(HttpStatusCode.OK, "Delete successful")

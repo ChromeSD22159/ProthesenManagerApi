@@ -1,15 +1,15 @@
-package de.frederikkohler.model
+package de.frederikkohler.model.user
 
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
 @Serializable
-data class Role (
+data class UserRole (
     val id:Int=0,
     val name: String,
 )
 
-object Roles: Table(){
+object UserRoles: Table(){
     val id= integer("id").autoIncrement()
     val name= varchar("name",255)
 

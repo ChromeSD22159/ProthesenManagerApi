@@ -1,6 +1,6 @@
 package de.frederikkohler.plugins
 
-import de.frederikkohler.mysql.entity.profile.ProfileService
+import de.frederikkohler.mysql.entity.user.UserProfileService
 import de.frederikkohler.mysql.entity.user.UserService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -11,7 +11,7 @@ import de.frederikkohler.service.LoginService
 
 fun Application.configureSecurity(
     userService: UserService =get(),
-    profileService: ProfileService =get()
+    userProfileService: UserProfileService =get()
 ) {
     // validate token from request
     install(Authentication) {

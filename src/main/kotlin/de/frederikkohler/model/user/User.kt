@@ -1,4 +1,4 @@
-package de.frederikkohler.model
+package de.frederikkohler.model.user
 
 import io.ktor.server.auth.*
 import kotlinx.serialization.Serializable
@@ -10,7 +10,7 @@ data class User(
 	val username: String,
 	val password: String,
 	val role: Int = 1
-) : Principal
+): Principal
 
 object Users: Table(){
 	val id=integer("id").autoIncrement()

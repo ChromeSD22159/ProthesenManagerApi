@@ -2,8 +2,8 @@ package de.frederikkohler.service
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import de.frederikkohler.model.User
-import de.frederikkohler.mysql.entity.roles.RoleServiceDataService
+import de.frederikkohler.model.user.User
+import de.frederikkohler.mysql.entity.user.UserRolesServiceDataService
 import de.frederikkohler.mysql.entity.user.UserServiceDataService
 import org.jetbrains.exposed.sql.Database
 
@@ -44,8 +44,10 @@ class DatabasesManager {
             User(username = "info@frederikkohler.de", password = "Fr3d3rik"),
             User(username = "nico.kohler@frederikkohler.de", password = "Schueler277!"),
         )
+
+
         UserServiceDataService().addUsersWhenNoRulesExist(users)
-        RoleServiceDataService().addRolesWhenNoRulesExist(listOf("User", "Admin"))
+        UserRolesServiceDataService().addRolesWhenNoRulesExist(listOf("User", "Admin"))
     }
 
     init {

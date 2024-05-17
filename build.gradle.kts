@@ -35,6 +35,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
     implementation("org.jetbrains.exposed:exposed-core:0.41.1")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1")
+    //implementation("org.jetbrains.exposed:exposed-java-time:0.50.1")
     implementation("com.h2database:h2:2.1.214")
     implementation("mysql:mysql-connector-java:8.0.28")
     implementation("io.ktor:ktor-server-websockets-jvm")

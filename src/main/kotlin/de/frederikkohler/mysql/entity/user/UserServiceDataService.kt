@@ -1,17 +1,14 @@
 package de.frederikkohler.mysql.entity.user
 
-import de.frederikkohler.model.Role
-import de.frederikkohler.model.Roles
-import de.frederikkohler.model.User
-import de.frederikkohler.model.Users
-import de.frederikkohler.model.Users.username
+import de.frederikkohler.model.user.User
+import de.frederikkohler.model.user.Users
 import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class UserServiceDataService : UserService {
 
-    private fun resultRowToUser(row: ResultRow):User{
+    private fun resultRowToUser(row: ResultRow): User {
         return User(
             id = row[Users.id],
             username = row[Users.username],
@@ -21,7 +18,7 @@ class UserServiceDataService : UserService {
     }
 
     override suspend fun addUser(user: User): User? = dbQuery{
-        val insertStmt=Users.insert {
+        val insertStmt= Users.insert {
             it[username] = user.username
             it[password] = user.password
             it[role] = user.role
@@ -30,7 +27,7 @@ class UserServiceDataService : UserService {
     }
 
     override suspend fun updateUser(user: User): Boolean = dbQuery{
-        Users.update({Users.id eq user.id }){
+        Users.update({ Users.id eq user.id }){
             it[username]=user.username
             it[role]=user.role
         }>0

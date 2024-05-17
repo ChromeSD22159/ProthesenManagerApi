@@ -3,8 +3,7 @@ package de.frederikkohler.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
-import com.typesafe.config.ConfigFactory
-import de.frederikkohler.model.User
+import de.frederikkohler.model.user.User
 import java.util.*
 
 object LoginService {
