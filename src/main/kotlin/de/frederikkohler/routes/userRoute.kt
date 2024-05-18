@@ -37,11 +37,6 @@ fun Routing.userRoute(
         val receiveUser = call.receive<CreateUser>()
         val userFound = userService.findUserByUsername(receiveUser.username)
 
-        println("-------")
-        println(receiveUser.toString())
-        println(userFound.toString())
-        println("-------")
-
         try {
             if (userFound != null) {
                 call.respond(HttpStatusCode.Conflict, "User already exists")
@@ -156,13 +151,18 @@ fun Routing.userRoute(
             }
 
             val user = userService.findUserByUsername(username) ?: return@post call.respond(HttpStatusCode.NotFound, "User not found!")
-            user.verified = isVerified
 
-            val updateSuccess = userService.updateUser(user)
-            if (updateSuccess) {
-                call.respond(HttpStatusCode.OK, user)
+            if(!user.verified) {
+                user.verified = isVerified
+                val updateSuccess = userService.updateUser(user)
+                if (updateSuccess) {
+                    call.respond(HttpStatusCode.OK, user)
+                    userVerifyTokenService.deleteToken(verifyCode)
+                } else {
+                    call.respond(HttpStatusCode.InternalServerError, "Failed to update user verification status.")
+                }
             } else {
-                call.respond(HttpStatusCode.InternalServerError, "Failed to update user verification status.")
+                call.respond(HttpStatusCode.OK, "User is already verified")
             }
         } catch (e: Exception) {
             call.respond(HttpStatusCode.InternalServerError, e.message ?: "An unexpected error occurred")
