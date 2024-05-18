@@ -4,12 +4,15 @@ import de.frederikkohler.model.user.UserVerifyToken
 import de.frederikkohler.model.user.UserVerifyTokens
 import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 
 interface UserVerifyTokenService {
     suspend fun addToken(userVerifyToken: UserVerifyToken): UserVerifyToken?
     suspend fun findTokenByUserIdOrNull(userId: Int): UserVerifyToken?
+    suspend fun deleteToken(tokenInt: Int): Boolean
 }
 
 class UserVerifyTokenServiceDataService: UserVerifyTokenService {
@@ -33,5 +36,9 @@ class UserVerifyTokenServiceDataService: UserVerifyTokenService {
             .select { (UserVerifyTokens.userId eq userId) }
             .map { resultRowToUserVerifyCode(it) }
             .firstOrNull()
+    }
+
+    override suspend fun deleteToken(tokenInt: Int): Boolean = dbQuery {
+        UserVerifyTokens.deleteWhere { token eq tokenInt }>0
     }
 }
