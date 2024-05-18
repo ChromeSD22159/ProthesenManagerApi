@@ -10,7 +10,6 @@ import org.jetbrains.exposed.sql.select
 interface UserPasswordService {
     suspend fun addPassword(userPassword: UserPassword): UserPassword?
     suspend fun findPasswordByUserNameOrNull(username: String): UserPassword?
-    suspend fun addPasswordsWhenNoPasswordsExist(passwords: List<UserPassword>)
 }
 
 class UserPasswordServiceDataService : UserPasswordService {
@@ -33,13 +32,5 @@ class UserPasswordServiceDataService : UserPasswordService {
         return UserPasswords.select { UserPasswords.username eq username }
             .map { resultRowToUser(it) }
             .firstOrNull()
-    }
-
-    override suspend fun addPasswordsWhenNoPasswordsExist(passwords: List<UserPassword>) {
-        passwords.forEach { user ->
-            if (this.findPasswordByUserNameOrNull(user.username) == null) {
-                this.addPassword(user)
-            }
-        }
     }
 }

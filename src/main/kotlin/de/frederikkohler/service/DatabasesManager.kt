@@ -40,19 +40,6 @@ class DatabasesManager {
     }
 
     suspend fun setupTablesEntriesWhenNotExist() {
-        val users = listOf(
-            User(username = "info@frederikkohler.de"),
-            User(username = "nico.kohler@frederikkohler.de"),
-        )
-
-        val passwords = listOf(
-            UserPassword("info@frederikkohler.de", "Fr3d3rik"),
-            UserPassword("nico.kohler@frederikkohler.de", "Schueler277!!")
-        )
-
-
-        UserServiceDataService().addUsersWhenNoUsersExist(users)
-        UserPasswordServiceDataService().addPasswordsWhenNoPasswordsExist(passwords)
         UserRolesServiceDataService().addRolesWhenNoRulesExist(listOf("User", "Admin"))
     }
 

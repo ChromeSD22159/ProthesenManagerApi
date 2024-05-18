@@ -31,7 +31,7 @@ fun Application.configureDatabases(): Database {
         )
 
         launch(Dispatchers.IO) {
-            //DatabasesManager().setupTablesEntriesWhenNotExist()
+            DatabasesManager().setupTablesEntriesWhenNotExist()
         }
     }
 

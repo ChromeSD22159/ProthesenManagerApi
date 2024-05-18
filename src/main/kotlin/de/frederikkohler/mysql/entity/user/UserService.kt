@@ -16,7 +16,6 @@ interface UserService {
     suspend fun findUserByUsername(username: String): User?
     suspend fun findUserByRoleID(roleID:Int): User?
     suspend fun getUserIdOrNull(username: String): Int?
-    suspend fun addUsersWhenNoUsersExist(users: List<User>)
 }
 
 class UserServiceDataService : UserService {
@@ -79,13 +78,5 @@ class UserServiceDataService : UserService {
         return Users.select { Users.username eq username }
             .map { resultRowToUser(it) }
             .firstOrNull()?.id ?: return null
-    }
-
-    override suspend fun addUsersWhenNoUsersExist(users: List<User>) {
-        return users.forEach { user ->
-            if (this.findUserByUsername(user.username) == null) {
-                this.addUser(user)
-            }
-        }
     }
 }
