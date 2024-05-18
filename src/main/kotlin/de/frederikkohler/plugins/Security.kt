@@ -2,11 +2,11 @@ package de.frederikkohler.plugins
 
 import de.frederikkohler.mysql.entity.user.UserProfileService
 import de.frederikkohler.mysql.entity.user.UserService
+import de.frederikkohler.mysql.entity.user.UserServiceDataService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import org.koin.ktor.ext.get
-import de.frederikkohler.mysql.entity.user.UserServiceDataService
 import de.frederikkohler.service.LoginService
 
 fun Application.configureSecurity(

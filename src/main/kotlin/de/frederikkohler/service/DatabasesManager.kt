@@ -3,14 +3,14 @@ package de.frederikkohler.service
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import de.frederikkohler.model.user.User
+import de.frederikkohler.model.user.UserPassword
+import de.frederikkohler.mysql.entity.user.UserPasswordServiceDataService
 import de.frederikkohler.mysql.entity.user.UserRolesServiceDataService
 import de.frederikkohler.mysql.entity.user.UserServiceDataService
 import org.jetbrains.exposed.sql.Database
 
 class DatabasesManager {
     var connection: Database? = null
-
-
 
     private fun getDatabaseInstance(
         port: Int? = 8889,
@@ -41,12 +41,18 @@ class DatabasesManager {
 
     suspend fun setupTablesEntriesWhenNotExist() {
         val users = listOf(
-            User(username = "info@frederikkohler.de", password = "Fr3d3rik"),
-            User(username = "nico.kohler@frederikkohler.de", password = "Schueler277!"),
+            User(username = "info@frederikkohler.de"),
+            User(username = "nico.kohler@frederikkohler.de"),
+        )
+
+        val passwords = listOf(
+            UserPassword("info@frederikkohler.de", "Fr3d3rik"),
+            UserPassword("nico.kohler@frederikkohler.de", "Schueler277!!")
         )
 
 
-        UserServiceDataService().addUsersWhenNoRulesExist(users)
+        UserServiceDataService().addUsersWhenNoUsersExist(users)
+        UserPasswordServiceDataService().addPasswordsWhenNoPasswordsExist(passwords)
         UserRolesServiceDataService().addRolesWhenNoRulesExist(listOf("User", "Admin"))
     }
 

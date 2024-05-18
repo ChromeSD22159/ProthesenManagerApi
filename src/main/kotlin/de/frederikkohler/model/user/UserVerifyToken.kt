@@ -5,17 +5,12 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
 @Serializable
-data class UserVerifyCode(
-    val id:Int = 0,
+data class UserVerifyToken(
     val userId:Int,
-    val code: Int
+    val token: Int
 ): Principal
 
-object UserVerifyCodes: Table(){
-    val id= integer("id").autoIncrement()
+object UserVerifyTokens: Table(){
     val userId = integer("user_id") // .references(Users.id, onDelete = ReferenceOption.CASCADE)
-    val code= integer("code")
-
-    override val primaryKey: PrimaryKey
-        get() = PrimaryKey(id)
+    val token= integer("token")
 }

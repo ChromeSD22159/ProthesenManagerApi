@@ -23,14 +23,15 @@ fun Application.configureDatabases(): Database {
             Users,
             UserProfiles,
             UserRoles,
-            UserVerifyCodes,
+            UserVerifyTokens,
             UserFollowers,
             UserFollows,
+            UserPasswords,
             Posts
         )
 
         launch(Dispatchers.IO) {
-            DatabasesManager().setupTablesEntriesWhenNotExist()
+            //DatabasesManager().setupTablesEntriesWhenNotExist()
         }
     }
 

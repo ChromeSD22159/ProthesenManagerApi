@@ -1,6 +1,7 @@
 package de.frederikkohler.routes.publicRoutes
 
 import de.frederikkohler.model.user.User
+import de.frederikkohler.mysql.entity.user.UserPasswordService
 import de.frederikkohler.mysql.entity.user.UserService
 import de.frederikkohler.service.LoginService
 import io.ktor.http.*
@@ -9,14 +10,15 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-
-fun Routing.communityRoutes(userService: UserService) {
+data class Login(val username: String, val password: String)
+fun Routing.communityRoutes(userService: UserService, userPasswordService: UserPasswordService) {
     post("/login") {
-        val credentials = call.receive<User>()
+        val receivedLoginData = call.receive<Login>()
 
-        val user = userService.findUserByUsername(credentials.username)
+        val user = userService.findUserByUsername(receivedLoginData.username)
+        val password = userPasswordService.findPasswordByUserNameOrNull(receivedLoginData.username)
 
-        if (user != null && user.password == credentials.password) {
+        if (user != null && password != null && password.password == receivedLoginData.password) {
             val token = LoginService.makeToken(user)
 
             call.respondText(token)

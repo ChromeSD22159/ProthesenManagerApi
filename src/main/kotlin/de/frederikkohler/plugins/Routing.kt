@@ -1,7 +1,9 @@
 package de.frederikkohler.plugins
 
+import de.frederikkohler.mysql.entity.user.UserPasswordService
 import de.frederikkohler.mysql.entity.user.UserProfileService
 import de.frederikkohler.mysql.entity.user.UserService
+import de.frederikkohler.mysql.entity.user.UserVerifyTokenService
 import de.frederikkohler.routes.publicRoutes.communityRoutes
 import de.frederikkohler.routes.profileRoute
 import de.frederikkohler.routes.protectedRoutes.protectedRoutes
@@ -15,7 +17,9 @@ import org.koin.ktor.ext.get
 
 fun Application.configureRouting(
     userService: UserService =get(),
-    userProfileService: UserProfileService =get()
+    userProfileService: UserProfileService =get(),
+    userPasswordService: UserPasswordService =get(),
+    userVerifyTokenService: UserVerifyTokenService =get()
 ) {
     routing {
         authenticate {
@@ -24,8 +28,8 @@ fun Application.configureRouting(
             }
         }
 
-        communityRoutes(userService)
-        userRoute(userService, userProfileService)
+        communityRoutes(userService, userPasswordService)
+        userRoute(userService, userProfileService, userPasswordService, userVerifyTokenService)
         profileRoute(userProfileService)
         protectedRoutes(userService)
     }

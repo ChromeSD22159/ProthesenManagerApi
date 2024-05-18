@@ -8,15 +8,15 @@ import org.jetbrains.exposed.sql.Table
 data class User(
 	val id:Int = 0,
 	val username: String,
-	val password: String,
-	val role: Int = 1
+	val role: Int = 1,
+	var verified: Boolean = false,
 ): Principal
 
 object Users: Table(){
 	val id=integer("id").autoIncrement()
 	val username=varchar("username",255)
-	val password=varchar("password",255)
 	val role=integer("role").default(1)
+	val verified = bool("verified").default(false)
 
 	override val primaryKey: PrimaryKey
 		get() = PrimaryKey(id)
