@@ -8,6 +8,7 @@ data class UserProfile(
     val firstname: String,
     val lastname: String,
     val email: String,
+    val bio: String?
 )
 
 object UserProfiles: Table(){
@@ -16,6 +17,7 @@ object UserProfiles: Table(){
     val firstname= varchar("firstname",255)
     val lastname= varchar("lastname",255)
     val email= varchar("email",255)
+    val bio = varchar("bio", 255).nullable()
 
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(id)

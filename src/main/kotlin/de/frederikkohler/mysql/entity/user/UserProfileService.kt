@@ -24,7 +24,8 @@ class UserProfileServiceDataService : UserProfileService {
             userId = row[UserProfiles.userId],
             firstname = row[UserProfiles.firstname],
             lastname = row[UserProfiles.lastname],
-            email = row[UserProfiles.email]
+            email = row[UserProfiles.email],
+            bio = row[UserProfiles.bio]
         )
     }
 
@@ -34,6 +35,7 @@ class UserProfileServiceDataService : UserProfileService {
             it[firstname] = userProfile.firstname
             it[lastname] = userProfile.lastname
             it[email] = userProfile.email
+            it[bio] = userProfile.bio
         }
         insertStmt.resultedValues?.singleOrNull()?.let { resultRowToProfile(it) }
     }
@@ -43,6 +45,7 @@ class UserProfileServiceDataService : UserProfileService {
             it[firstname]=userProfile.firstname
             it[lastname]=userProfile.lastname
             it[email]=userProfile.email
+            it[bio] = userProfile.bio
         }>0
     }
 
