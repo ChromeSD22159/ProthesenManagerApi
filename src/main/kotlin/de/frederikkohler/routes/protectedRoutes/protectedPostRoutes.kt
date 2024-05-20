@@ -11,19 +11,14 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class PostRequest(
-    val userId: Int,
-    val description: String
-)
 
 fun Routing.protectedPostRoutes(postService: PostService, userService: UserService) {
-    // Get Posts
-    // http://0.0.0.0:8080/posts
-    // http://0.0.0.0:8080/posts?maxPosts=10
+
     authenticate {
+
+        // Get Posts
+        // GET http://0.0.0.0:8080/posts?maxPosts=10
+        // Optional query parameter: maxPosts - the maximum number of posts to retrieve (default: 10)
         get("/posts") {
             val maxPosts = call.request.queryParameters["maxPosts"]?.toIntOrNull() ?: 10
 
@@ -37,14 +32,14 @@ fun Routing.protectedPostRoutes(postService: PostService, userService: UserServi
                 call.respond(HttpStatusCode.InternalServerError, "Failed to retrieve posts")
             }
         }
-    }
-    // Upload Image and save Post
-    // http://0.0.0.0:8080/post?userID={1}&description={Das ist mein erster Post}
-    authenticate {
+
+
+        // Upload Image and save Post
+        // POST http://0.0.0.0:8080/post?userID=1&description=Das ist mein erster Post
+        // Required query parameters: userID, description
         post("/post") {
             val userID = call.parameters["userID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No User ID")
-            val description =
-                call.parameters["description"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No Description")
+            val description = call.parameters["description"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No Description")
             val multipart = call.receiveMultipart()
 
             try {
@@ -81,9 +76,11 @@ fun Routing.protectedPostRoutes(postService: PostService, userService: UserServi
 
             call.respond(HttpStatusCode.Created, "Post created successfully")
         }
-    }
 
-    authenticate {
+
+        // DELETE POST BY ID
+        // DELETE http://0.0.0.0:8080/post/1
+        // Required path parameter: id (Post ID)
         delete("/post/{id}") {
             val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest, "No ID")
 
@@ -103,6 +100,48 @@ fun Routing.protectedPostRoutes(postService: PostService, userService: UserServi
                     else call.respond(HttpStatusCode.BadRequest, "Post with id $id dont exist")
                 }
 
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+            }
+        }
+
+
+        // LIKE POST BY ID
+        // POST http://0.0.0.0:8080/post/12/like?userID=1
+        // Required path parameter: postID
+        // Required query parameter: userID
+        post("/post/{postID}/like") {
+            val parameterPostID = call.parameters["postID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No PostID")
+            val receiveUserID = call.parameters["userID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No UserID")
+            try {
+                val likeOrNull = postService.like(parameterPostID.toInt(), receiveUserID.toInt())
+
+                if (likeOrNull != null) {
+                    call.respond(HttpStatusCode.OK)
+                } else {
+                    call.respond(HttpStatusCode.NotFound)
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+            }
+        }
+
+
+        // UNLIKE POST BY ID
+        // POST http://0.0.0.0:8080/post/12/unlike?userID=1
+        // Required path parameter: postID
+        // Required query parameter: userID
+        post("/post/{postID}/unlike") {
+            val parameterPostID = call.parameters["postID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No PostID")
+            val receiveUserID = call.parameters["userID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No UserID")
+            try {
+                val likeOrNull = postService.unLike(parameterPostID.toInt(), receiveUserID.toInt())
+
+                if (likeOrNull != null) {
+                    call.respond(HttpStatusCode.OK)
+                } else {
+                    call.respond(HttpStatusCode.NotFound)
+                }
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
             }

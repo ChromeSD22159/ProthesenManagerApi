@@ -4,11 +4,8 @@ import de.frederikkohler.model.post.*
 import de.frederikkohler.model.user.Users
 import de.frederikkohler.plugins.dbQuery
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
 import java.time.LocalDate
 
 @Serializable
@@ -28,7 +25,8 @@ data class Comment(
 interface PostService {
     suspend fun addPost(userID: Int, post: Post): Post?
     suspend fun addImage(postId: Int, imageURL: String): PostImage?
-    suspend fun addLike(postID: Int, userID: Int): PostLike?
+    suspend fun like(postID: Int, userID: Int): PostLike?
+    suspend fun unLike(postID: Int, userID: Int): PostLike?
     suspend fun addStar(postID: Int, userID: Int): PostStar?
     suspend fun addComment(postID: Int, userID: Int, comment: String): PostComment?
     suspend fun findPostByID(postID: Int): Post?
@@ -69,19 +67,6 @@ class PostServiceDataService : PostService {
             PostImage(
                 postId = row[PostImages.postId],
                 imageUrl = row[PostImages.imageUrl]
-            )
-        }
-    }
-
-    override suspend fun addLike(postID: Int, userID: Int): PostLike? = dbQuery {
-        val insertStatement = PostLikes.insert {
-            it[postId] = postID
-            it[userId] = userID
-        }
-        insertStatement.resultedValues?.singleOrNull()?.let { row ->
-            PostLike(
-                postId = row[PostLikes.postId],
-                userId = row[PostLikes.userId],
             )
         }
     }
@@ -162,5 +147,38 @@ class PostServiceDataService : PostService {
                     starsCount = starsCount.toInt()
                 )
             }
+    }
+
+    override suspend fun like(postID: Int, userID: Int): PostLike? = dbQuery {
+        val insertStatement = PostLikes.insert {
+            it[postId] = postID
+            it[userId] = userID
+        }
+
+        insertStatement.resultedValues?.singleOrNull()?.let { row ->
+            PostLike(
+                postId = row[PostLikes.postId],
+                userId = row[PostLikes.userId]
+            )
+        }
+    }
+
+    override suspend fun unLike(postID: Int, userID: Int): PostLike? = dbQuery {
+        // Finden des zu löschenden Eintrags
+        val likeToDelete = PostLikes.select { (PostLikes.postId eq postID) and  (PostLikes.userId eq userID) }
+            .singleOrNull()
+            ?.let { row ->
+                PostLike(
+                    postId = row[PostLikes.postId],
+                    userId = row[PostLikes.userId]
+                )
+            }
+
+        // Wenn der Eintrag gefunden wurde, löschen
+        if (likeToDelete != null) {
+            PostLikes.deleteWhere { (PostLikes.postId eq postID) and (PostLikes.userId eq userID) }
+        }
+
+        likeToDelete
     }
 }
