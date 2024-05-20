@@ -15,15 +15,15 @@ fun Routing.communityRoutes(userService: UserService, userPasswordService: UserP
     post("/login") {
         val receivedLoginData = call.receive<Login>()
 
-        val user = userService.findUserByUsername(receivedLoginData.username)
-        val password = userPasswordService.findPasswordByUserNameOrNull(receivedLoginData.username)
+        val loginDateOrNull = userPasswordService.findPasswordByUserNameOrNull(receivedLoginData.username)
+        val userOrNull = userService.findUserByUsernameOrNull(receivedLoginData.username)
 
-        if (user != null && password != null && password.password == receivedLoginData.password) {
-            val token = LoginService.makeToken(user)
+        if (loginDateOrNull != null && userOrNull != null && loginDateOrNull.password == receivedLoginData.password) {
+            val token = LoginService.makeToken(userOrNull)
 
             call.respondText(token)
         } else {
-            if (user != null) {
+            if (userOrNull != null) {
                 call.respond(HttpStatusCode.Unauthorized, "Invalid password")
             } else {
                 call.respond(HttpStatusCode.Unauthorized, "User not found")
@@ -34,7 +34,7 @@ fun Routing.communityRoutes(userService: UserService, userPasswordService: UserP
     post("/register") {
 
         val credentials = call.receive<User>()
-        val user = userService.addUser(credentials)
+        val user = userService.addUserOrNull(credentials)
         // TODO: Generate Verifize code
 
         // TODO: save code in Table <userCodes>

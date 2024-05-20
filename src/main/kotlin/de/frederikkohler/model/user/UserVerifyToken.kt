@@ -2,6 +2,7 @@ package de.frederikkohler.model.user
 
 import io.ktor.server.auth.*
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 
 @Serializable
@@ -11,6 +12,6 @@ data class UserVerifyToken(
 ): Principal
 
 object UserVerifyTokens: Table(){
-    val userId = integer("user_id") // .references(Users.id, onDelete = ReferenceOption.CASCADE)
+    val userId = integer("user_id").references(Users.id, onDelete = ReferenceOption.CASCADE)
     val token= integer("token")
 }

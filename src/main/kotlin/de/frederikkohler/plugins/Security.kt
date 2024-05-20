@@ -19,7 +19,7 @@ fun Application.configureSecurity(
             verifier(LoginService.verifier)
             realm = "ktor.io"
             validate { credentials ->
-                UserServiceDataService().getUser(credentials.payload.getClaim("userID").asInt())
+                UserServiceDataService().findUserByUserIdOrNull(credentials.payload.getClaim("userID").asInt())
             }
         }
     }

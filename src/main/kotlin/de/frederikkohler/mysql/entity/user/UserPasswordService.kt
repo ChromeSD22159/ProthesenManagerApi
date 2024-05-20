@@ -2,6 +2,7 @@ package de.frederikkohler.mysql.entity.user
 
 import de.frederikkohler.model.user.UserPassword
 import de.frederikkohler.model.user.UserPasswords
+import de.frederikkohler.model.user.Users
 import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
@@ -15,6 +16,7 @@ interface UserPasswordService {
 class UserPasswordServiceDataService : UserPasswordService {
     private fun resultRowToUser(row: ResultRow): UserPassword {
         return UserPassword(
+            userId = row[UserPasswords.userId],
             username = row[UserPasswords.username],
             password = row[UserPasswords.password]
         )
@@ -22,6 +24,7 @@ class UserPasswordServiceDataService : UserPasswordService {
 
     override suspend fun addPassword(userPassword: UserPassword): UserPassword? = dbQuery{
         val insertStmt= UserPasswords.insert {
+            it[userId] = userPassword.userId
             it[username] = userPassword.username
             it[password] = userPassword.password
         }

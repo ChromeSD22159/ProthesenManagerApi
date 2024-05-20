@@ -7,14 +7,14 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 interface UserService {
-    suspend fun addUser(user: User): User?
+    suspend fun addUserOrNull(user: User): User?
     suspend fun updateUser(user: User):Boolean
     suspend fun deleteUser(user: User):Boolean
     suspend fun getUsers():List<User>
     suspend fun searchUser(query:String):List<User>
-    suspend fun getUser(id:Int): User?
-    suspend fun findUserByUsername(username: String): User?
-    suspend fun findUserByRoleID(roleID:Int): User?
+    suspend fun findUserByUserIdOrNull(id:Int): User?
+    suspend fun findUserByUsernameOrNull(username: String): User?
+    suspend fun findUserByRoleIdOrNull(roleID:Int): User?
     suspend fun getUserIdOrNull(username: String): Int?
 }
 
@@ -29,7 +29,7 @@ class UserServiceDataService : UserService {
         )
     }
 
-    override suspend fun addUser(user: User): User? = dbQuery{
+    override suspend fun addUserOrNull(user: User): User? = dbQuery{
         val insertStmt= Users.insert {
             it[username] = user.username
             it[role] = user.role
@@ -58,17 +58,17 @@ class UserServiceDataService : UserService {
             .map { resultRowToUser(it) }
     }
 
-    override suspend fun getUser(id: Int): User? = dbQuery{
+    override suspend fun findUserByUserIdOrNull(id: Int): User? = dbQuery{
         Users.select { (Users.id eq id) }.map { resultRowToUser(it) }.singleOrNull()
     }
 
-    override suspend fun findUserByUsername(username: String): User? = dbQuery {
+    override suspend fun findUserByUsernameOrNull(username: String): User? = dbQuery {
         Users.select { Users.username eq username }
             .map { resultRowToUser(it) }
             .firstOrNull()
     }
 
-    override suspend fun findUserByRoleID(roleID: Int): User? = dbQuery {
+    override suspend fun findUserByRoleIdOrNull(roleID: Int): User? = dbQuery {
         Users.select { (Users.role eq roleID) }
             .map { resultRowToUser(it) }
             .firstOrNull()

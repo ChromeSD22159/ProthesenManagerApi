@@ -2,17 +2,23 @@ package de.frederikkohler.service
 
 import io.ktor.http.content.*
 import kotlinx.coroutines.runBlocking
+import java.awt.Image
+import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
+import javax.imageio.ImageIO
 import java.util.*
 
 class ImageUploadService {
-    suspend fun upload(userID: String?, multipart: MultiPartData): Map<String, String> {
+    suspend fun upload(userID: String?, multipart: MultiPartData, imageSize: Int? = null): Map<String, List<String>> {
         runBlocking { // Wait for the upload directory to exist
             ensureUploadsDirectoryExists("uploads")
             if (userID != null) ensureUploadsDirectoryExists("uploads/Users/$userID")
         }
 
-        var imageUrl: String? = null
+        val imageUrls = mutableListOf<String>()
 
         multipart.forEachPart { part ->
             when (part) {
@@ -22,14 +28,38 @@ class ImageUploadService {
                     val directoryPath = if (userID == null) "uploads" else "uploads/Users/$userID"
                     val filePath = File("$directoryPath/$fileName")
                     part.streamProvider().use { its -> filePath.outputStream().buffered().use { its.copyTo(it) } }
-                    imageUrl = "$directoryPath/$fileName"
+                    val imageUrl = "$directoryPath/$fileName"
+                    imageUrls.add(imageUrl)
                 }
+
                 else -> Unit
             }
             part.dispose()
         }
 
-        return imageUrl?.let { mapOf("imageUrl" to it) } ?: throw IllegalArgumentException("Image upload failed")
+        return mapOf("imageUrls" to imageUrls)
+    }
+
+    fun deleteImageByImageName(imagesUrls: List<String>): Boolean {
+        val deletedImages: MutableList<String> = mutableListOf()
+
+        try {
+            imagesUrls.forEach { imageUrl ->
+                val file = File(imageUrl)
+                if (file.exists()) {
+                    file.delete()
+                    deletedImages.add(imageUrl)
+                } else {
+                    println("Image not found: $imageUrl")
+                }
+            }
+
+
+        } catch (e: Exception) {
+            println("Error deleting image: ${e.message}")
+        }
+
+        return deletedImages.size == imagesUrls.size
     }
 
     private fun ensureUploadsDirectoryExists(directoryName: String): Boolean {

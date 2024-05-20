@@ -1,5 +1,7 @@
 package de.frederikkohler.plugins
 
+import de.frederikkohler.model.post.*
+import de.frederikkohler.model.post.Posts
 import de.frederikkohler.model.user.*
 import de.frederikkohler.service.DatabasesManager
 import io.ktor.server.application.*
@@ -27,7 +29,11 @@ fun Application.configureDatabases(): Database {
             UserFollowers,
             UserFollows,
             UserPasswords,
-            Posts
+            Posts,
+            PostImages,
+            PostLikes,
+            PostStars,
+            PostComments,
         )
 
         launch(Dispatchers.IO) {

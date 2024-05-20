@@ -25,6 +25,7 @@ data class CreateUser(
     val firstname: String,
     val lastname: String,
     val email: String,
+    val bio: String? = null
 ): Principal
 
 fun Routing.userRoute(
@@ -35,27 +36,29 @@ fun Routing.userRoute(
 ) {
     post("/user/create"){
         val receiveUser = call.receive<CreateUser>()
-        val userFound = userService.findUserByUsername(receiveUser.username)
+        val userFound = userService.findUserByUsernameOrNull(receiveUser.username)
 
         try {
             if (userFound != null) {
                 call.respond(HttpStatusCode.Conflict, "User already exists")
             } else {
                 val generatedUser = User(username = receiveUser.username)
-                val result = userService.addUser(generatedUser)
+                val result = userService.addUserOrNull(generatedUser)
 
                 if (result != null) {
-                    userProfileService.addProfile(
+                    userProfileService.addProfileOrNull(
                         UserProfile(
                             userId = result.id,
                             firstname = receiveUser.firstname,
                             lastname = receiveUser.lastname,
                             email = receiveUser.email,
+                            bio = receiveUser.bio ?: ""
                         )
                     )
 
                     userPasswordService.addPassword(
                         UserPassword(
+                            userId = result.id,
                             receiveUser.username,
                             receiveUser.password
                         )
@@ -105,7 +108,7 @@ fun Routing.userRoute(
         val id=call.parameters["id"]?.toInt()
 
         if (id != null) {
-            val user = userService.getUser(id)
+            val user = userService.findUserByUserIdOrNull(id)
             if(user != null) {
                 val deleteResult = userService.deleteUser(user)
 
@@ -134,7 +137,7 @@ fun Routing.userRoute(
         val id=call.parameters["id"]?.toInt()
 
         id?.let {
-            userService.getUser(it)?.let {user->
+            userService.findUserByUserIdOrNull(it)?.let { user->
                 call.respond(HttpStatusCode.OK,user)
             } ?: call.respond(HttpStatusCode.NotFound,"User not found")
         } ?: call.respond(HttpStatusCode.BadGateway,"Provide Input!!")
@@ -150,7 +153,7 @@ fun Routing.userRoute(
                 return@post call.respond(HttpStatusCode.BadRequest, "Invalid verification code!")
             }
 
-            val user = userService.findUserByUsername(username) ?: return@post call.respond(HttpStatusCode.NotFound, "User not found!")
+            val user = userService.findUserByUsernameOrNull(username) ?: return@post call.respond(HttpStatusCode.NotFound, "User not found!")
 
             if(!user.verified) {
                 user.verified = isVerified
@@ -169,3 +172,19 @@ fun Routing.userRoute(
         }
     }
 }
+
+/*
+suspend fun sendEmail(to: String, subject: String, content: String) {
+    val fromEmail = Email("info@frederikkohler.de")
+    val toEmail = Email(to)
+    val emailContent = Content("text/plain", content)
+    val mail = Mail(fromEmail, subject, toEmail, emailContent)
+
+    val sg = SendGrid("YOUR_SENDGRID_API_KEY")
+    val request = Request()
+    request.method = Method.POST
+    request.endpoint = "mail/send"
+    request.body = mail.build()
+    sg.api(request)
+}
+ */

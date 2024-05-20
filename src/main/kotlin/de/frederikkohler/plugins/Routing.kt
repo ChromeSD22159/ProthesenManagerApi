@@ -1,9 +1,11 @@
 package de.frederikkohler.plugins
 
+import de.frederikkohler.mysql.entity.post.PostService
 import de.frederikkohler.mysql.entity.user.UserPasswordService
 import de.frederikkohler.mysql.entity.user.UserProfileService
 import de.frederikkohler.mysql.entity.user.UserService
 import de.frederikkohler.mysql.entity.user.UserVerifyTokenService
+import de.frederikkohler.routes.postRoutes
 import de.frederikkohler.routes.publicRoutes.communityRoutes
 import de.frederikkohler.routes.profileRoute
 import de.frederikkohler.routes.protectedRoutes.protectedRoutes
@@ -19,7 +21,8 @@ fun Application.configureRouting(
     userService: UserService =get(),
     userProfileService: UserProfileService =get(),
     userPasswordService: UserPasswordService =get(),
-    userVerifyTokenService: UserVerifyTokenService =get()
+    userVerifyTokenService: UserVerifyTokenService =get(),
+    postService: PostService =get(),
 ) {
     routing {
         authenticate {
@@ -32,5 +35,6 @@ fun Application.configureRouting(
         userRoute(userService, userProfileService, userPasswordService, userVerifyTokenService)
         profileRoute(userProfileService)
         protectedRoutes(userService)
+        postRoutes(postService, userService)
     }
 }

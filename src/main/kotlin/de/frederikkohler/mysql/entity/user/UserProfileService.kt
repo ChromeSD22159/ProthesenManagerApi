@@ -5,22 +5,20 @@ import de.frederikkohler.model.user.UserProfiles
 import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 
 interface UserProfileService {
-    suspend fun addProfile(userProfile: UserProfile): UserProfile?
+    suspend fun addProfileOrNull(userProfile: UserProfile): UserProfile?
     suspend fun updateProfile(userProfile: UserProfile):Boolean
-    suspend fun getProfile():List<UserProfile>
+    suspend fun getProfiles():List<UserProfile>
     suspend fun deleteProfile(userID: Int):Boolean
     suspend fun searchProfile(query:String):List<UserProfile>
-    suspend fun getProfile(id:Int): UserProfile?
+    suspend fun getProfileOrNull(id:Int): UserProfile?
 }
 
 class UserProfileServiceDataService : UserProfileService {
 
     private fun resultRowToProfile(row: ResultRow): UserProfile {
         return UserProfile(
-            id = row[UserProfiles.id],
             userId = row[UserProfiles.userId],
             firstname = row[UserProfiles.firstname],
             lastname = row[UserProfiles.lastname],
@@ -29,7 +27,7 @@ class UserProfileServiceDataService : UserProfileService {
         )
     }
 
-    override suspend fun addProfile(userProfile: UserProfile): UserProfile? = dbQuery{
+    override suspend fun addProfileOrNull(userProfile: UserProfile): UserProfile? = dbQuery{
         val insertStmt= UserProfiles.insert {
             it[userId] = userProfile.userId
             it[firstname] = userProfile.firstname
@@ -41,7 +39,7 @@ class UserProfileServiceDataService : UserProfileService {
     }
 
     override suspend fun updateProfile(userProfile: UserProfile): Boolean = dbQuery{
-        UserProfiles.update({ UserProfiles.id eq userProfile.id}){
+        UserProfiles.update({ UserProfiles.userId eq userProfile.userId}){
             it[firstname]=userProfile.firstname
             it[lastname]=userProfile.lastname
             it[email]=userProfile.email
@@ -53,7 +51,7 @@ class UserProfileServiceDataService : UserProfileService {
         UserProfiles.deleteWhere { userId eq userID }>0
     }
 
-    override suspend fun getProfile(): List<UserProfile> = dbQuery{
+    override suspend fun getProfiles(): List<UserProfile> = dbQuery{
         UserProfiles.selectAll().map { resultRowToProfile(it) }
     }
 
@@ -62,7 +60,7 @@ class UserProfileServiceDataService : UserProfileService {
             .map { resultRowToProfile(it) }
     }
 
-    override suspend fun getProfile(id: Int): UserProfile? = dbQuery{
-        UserProfiles.select { (UserProfiles.id eq id) }.map { resultRowToProfile(it) }.singleOrNull()
+    override suspend fun getProfileOrNull(id: Int): UserProfile? = dbQuery{
+        UserProfiles.select { (UserProfiles.userId eq id) }.map { resultRowToProfile(it) }.singleOrNull()
     }
 }

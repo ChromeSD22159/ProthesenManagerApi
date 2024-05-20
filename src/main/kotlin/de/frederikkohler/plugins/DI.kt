@@ -1,5 +1,7 @@
 package de.frederikkohler.plugins
 
+import de.frederikkohler.mysql.entity.post.PostService
+import de.frederikkohler.mysql.entity.post.PostServiceDataService
 import de.frederikkohler.mysql.entity.user.*
 import io.ktor.server.application.*
 import org.koin.dsl.module
@@ -11,6 +13,7 @@ fun Application.configureDI(){
         single<UserProfileService> { UserProfileServiceDataService() }
         single<UserPasswordService> { UserPasswordServiceDataService() }
         single<UserVerifyTokenService> { UserVerifyTokenServiceDataService() }
+        single<PostService> { PostServiceDataService() }
     }
 
     install(Koin){

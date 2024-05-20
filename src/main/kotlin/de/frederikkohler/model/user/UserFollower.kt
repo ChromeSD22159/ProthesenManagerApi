@@ -1,21 +1,22 @@
 package de.frederikkohler.model.user
 
+import de.frederikkohler.model.user.UserFollows.followUserID
+import de.frederikkohler.model.user.UserPasswords.references
 import io.ktor.server.auth.*
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 
 @Serializable
 data class UserFollower(
-    val id: Int = 0,
     val userID: Int,
     val followerUserID: Int
 ): Principal
 
 object UserFollowers: Table(){
-    val id = integer("id").autoIncrement()
-    val userID = integer("userID")
-    val followerUserID = integer("followerUserID")
+    val userID = integer("userID").references(Users.id, onDelete = ReferenceOption.CASCADE)
+    val followerUserID = integer("followerUserID").references(Users.id, onDelete = ReferenceOption.CASCADE)
 
     override val primaryKey: PrimaryKey
-        get() = PrimaryKey(id)
+        get() = PrimaryKey(userID, followerUserID)
 }

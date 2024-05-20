@@ -1,5 +1,7 @@
 package de.frederikkohler.model.user
 
+import de.frederikkohler.model.user.UserFollows.followUserID
+import de.frederikkohler.model.user.UserFollows.userID
 import io.ktor.server.auth.*
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table

@@ -1,6 +1,5 @@
 package de.frederikkohler.routes
 
-import de.frederikkohler.model.user.User
 import de.frederikkohler.model.user.UserProfile
 import de.frederikkohler.mysql.entity.user.UserProfileService
 import io.ktor.http.*
@@ -15,20 +14,19 @@ fun Routing.profileRoute(userProfileService: UserProfileService) {
     post("/users/profile/create") {
         val profil = call.receive<UserProfile>()
 
-        println(profil.toString())
-
         try {
-            val result = userProfileService.addProfile(profil)
+            val result = userProfileService.addProfileOrNull(profil)
 
             result?.let {
                 call.respond(HttpStatusCode.Created, it)
 
-                userProfileService.addProfile(
+                userProfileService.addProfileOrNull(
                     UserProfile(
-                        userId = it.id,
+                        userId = it.userId,
                         firstname = "",
                         lastname = "",
-                        email = ""
+                        email = "",
+                        bio = ""
                     )
                 )
             } ?: call.respond(HttpStatusCode.NotImplemented, "Error adding user")
@@ -39,10 +37,12 @@ fun Routing.profileRoute(userProfileService: UserProfileService) {
 
     get("user/profile/{id}") {
         val id=call.parameters["id"]?.toInt()
-        id?.let {
-            userProfileService.getProfile(it)?.let { user->
-                call.respond(HttpStatusCode.OK,user)
-            } ?: call.respond(HttpStatusCode.NotFound,"User not found")
+        id?.let { id ->
+
+             userProfileService.getProfileOrNull(id)?.let { user ->
+                 call.respond(HttpStatusCode.OK, user)
+            } ?: call.respond(HttpStatusCode.NotFound, "User not found")
+
         } ?: call.respond(HttpStatusCode.BadGateway,"Provide Input!!")
     }
 
