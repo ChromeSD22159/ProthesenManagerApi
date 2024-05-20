@@ -3,8 +3,6 @@ package de.frederikkohler.mysql.entity.user
 import de.frederikkohler.model.user.UserPassword
 import de.frederikkohler.model.user.UserPasswords
 import de.frederikkohler.model.user.Users
-import de.frederikkohler.model.user.Users.role
-import de.frederikkohler.model.user.Users.verified
 import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
@@ -16,6 +14,7 @@ interface UserPasswordService {
     suspend fun findPasswordByUserNameOrNull(username: String): String?
     suspend fun findPasswordByUserIdOrNull(userID: Int): UserPassword?
     suspend fun updatePassword(user: UserPassword, newPassword: String): Boolean
+    suspend fun updateUsername(user: UserPassword, newUsername: String): Boolean
 }
 
 class UserPasswordServiceDataService : UserPasswordService {
@@ -60,6 +59,12 @@ class UserPasswordServiceDataService : UserPasswordService {
     override suspend fun updatePassword(user: UserPassword, newPassword: String): Boolean = dbQuery {
         UserPasswords.update({ UserPasswords.userId eq user.userId }) {
             it[password] = newPassword
+        } > 0
+    }
+
+    override suspend fun updateUsername(user: UserPassword, newUsername: String): Boolean = dbQuery {
+        UserPasswords.update({ UserPasswords.userId eq user.userId }) {
+            it[username] = newUsername
         } > 0
     }
 }

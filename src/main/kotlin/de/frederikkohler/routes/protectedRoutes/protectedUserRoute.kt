@@ -1,13 +1,11 @@
 package de.frederikkohler.routes.protectedRoutes
 
-import de.frederikkohler.model.user.User
 import de.frederikkohler.mysql.entity.user.UserPasswordService
 import de.frederikkohler.mysql.entity.user.UserProfileService
 import de.frederikkohler.mysql.entity.user.UserService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
@@ -29,18 +27,26 @@ fun Routing.protectedUserRoute(
     userPasswordService: UserPasswordService
 ) {
     authenticate {
+        // Get Posts
+        // GET http://0.0.0.0:8080/users
         get("/users"){
             val users=userService.getUsers()
             call.respond(HttpStatusCode.OK,users)
         }
 
-        put("/user/{id}"){
+
+        // Update Posts
+        // PUT http://0.0.0.0:8080/user/1/username?newusername=frederik.kohler
+        put("/user/{id}/username"){
             try {
                 val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Missing id")
                 val newUsername = call.parameters["newUsername"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Missing new username")
 
                 val user = userService.findUserByUserIdOrNull(id.toInt()) ?: return@put call.respond(HttpStatusCode.NotFound, "User not found")
                 user.username = newUsername
+
+                val userPassword = userPasswordService.findPasswordByUserIdOrNull(id.toInt()) ?: return@put call.respond(HttpStatusCode.BadRequest, "User not found")
+                userPasswordService.updateUsername(userPassword, newUsername)
 
                 val result=userService.updateUser(user)
                 if (result) call.respond(HttpStatusCode.OK,"Update successful")
@@ -51,7 +57,8 @@ fun Routing.protectedUserRoute(
         }
 
 
-        // http://0.0.0.0:8080/user/1?newusername=Frederik.Kohler
+        // Update Posts
+        // PUT http://0.0.0.0:8080/user/1/password?newPassword=Fr3d3rik!!
         put("/user/{id}/password"){
             try {
                 val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Missing id")
@@ -70,6 +77,9 @@ fun Routing.protectedUserRoute(
             }
         }
 
+
+        // DELETE User by ID
+        // DEL http://0.0.0.0:8080/user/10
         delete("/user/{id}"){
             val id=call.parameters["id"]?.toInt()
 
@@ -93,13 +103,19 @@ fun Routing.protectedUserRoute(
             }
         }
 
-        get("/search"){
+
+        // Search User by String
+        // GET http://0.0.0.0:8080/user/search?q=Frederik
+        get("/user/search"){
             val query=call.request.queryParameters["q"].toString()
             val users=userService.searchUser(query)
             call.respond(HttpStatusCode.OK,users)
         }
 
-        get("/users/{id}") {
+
+        // Get User by ID
+        // GET http://0.0.0.0:8080/user/1
+        get("/user/{id}") {
             val id=call.parameters["id"]?.toInt()
 
             id?.let {
@@ -109,6 +125,9 @@ fun Routing.protectedUserRoute(
             } ?: call.respond(HttpStatusCode.BadGateway,"Provide Input!!")
         }
 
+
+        // Logout User
+        // POST http://0.0.0.0:8080/logout
         post("/logout") {
             call.respond(HttpStatusCode.OK, "Logged out successfully")
         }

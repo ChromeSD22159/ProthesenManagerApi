@@ -125,6 +125,4 @@ fun Routing.publicUserRoutes(
             }
         }
     }
-
-    post("/password-reset") {}
 }
