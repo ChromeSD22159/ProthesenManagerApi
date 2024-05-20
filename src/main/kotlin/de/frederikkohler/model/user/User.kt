@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.Table
 @Serializable
 data class User(
 	val id:Int = 0,
-	val username: String,
+	var username: String,
 	val role: Int = 1,
 	var verified: Boolean = false,
 ): Principal

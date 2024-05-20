@@ -1,17 +1,18 @@
-package de.frederikkohler.routes
+package de.frederikkohler.routes.publicRoutes
 
-import de.frederikkohler.model.user.UserProfile
 import de.frederikkohler.model.user.User
 import de.frederikkohler.model.user.UserPassword
+import de.frederikkohler.model.user.UserProfile
 import de.frederikkohler.model.user.UserVerifyToken
 import de.frederikkohler.mysql.entity.user.UserPasswordService
 import de.frederikkohler.mysql.entity.user.UserProfileService
 import de.frederikkohler.mysql.entity.user.UserService
 import de.frederikkohler.mysql.entity.user.UserVerifyTokenService
+import de.frederikkohler.routes.protectedRoutes.CreateUser
+import de.frederikkohler.service.LoginService
 import de.frederikkohler.service.VerificationTokenManager
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -19,22 +20,15 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 
 @Serializable
-data class CreateUser(
-    val username: String,
-    val password: String,
-    val firstname: String,
-    val lastname: String,
-    val email: String,
-    val bio: String? = null
-): Principal
+data class Login(val username: String, val password: String)
 
-fun Routing.userRoute(
+fun Routing.publicUserRoutes(
     userService: UserService,
-    userProfileService: UserProfileService,
     userPasswordService: UserPasswordService,
+    userProfileService: UserProfileService,
     userVerifyTokenService: UserVerifyTokenService,
 ) {
-    post("/user/create"){
+    post("/register"){
         val receiveUser = call.receive<CreateUser>()
         val userFound = userService.findUserByUsernameOrNull(receiveUser.username)
 
@@ -85,65 +79,7 @@ fun Routing.userRoute(
         }
     }
 
-    get("/users"){
-        val users=userService.getUsers()
-        call.respond(HttpStatusCode.OK,users)
-    }
-
-    put("/users"){
-        try {
-            val user=call.receive<User>()
-            val result=userService.updateUser(user)
-            if (result){
-                call.respond(HttpStatusCode.OK,"Update successful")
-            }else{
-                call.respond(HttpStatusCode.NotImplemented,"Update not done")
-            }
-        }catch (e: ExposedSQLException){
-            call.respond(HttpStatusCode.BadRequest,e.message ?: "SQL Exception!!")
-        }
-    }
-
-    delete("/user/{id}"){
-        val id=call.parameters["id"]?.toInt()
-
-        if (id != null) {
-            val user = userService.findUserByUserIdOrNull(id)
-            if(user != null) {
-                val deleteResult = userService.deleteUser(user)
-
-                userProfileService.deleteProfile(user.id)
-
-                if (deleteResult) {
-                    call.respond(HttpStatusCode.OK, "Delete successful")
-                } else {
-                    call.respond(HttpStatusCode.NotFound, "User not found")
-                }
-            } else {
-                call.respond(HttpStatusCode.NotFound, "User not found")
-            }
-        } else {
-            call.respond(HttpStatusCode.BadRequest, "Invalid user ID")
-        }
-    }
-
-    get("/search"){
-        val query=call.request.queryParameters["q"].toString()
-        val users=userService.searchUser(query)
-        call.respond(HttpStatusCode.OK,users)
-    }
-
-    get("/users/{id}") {
-        val id=call.parameters["id"]?.toInt()
-
-        id?.let {
-            userService.findUserByUserIdOrNull(it)?.let { user->
-                call.respond(HttpStatusCode.OK,user)
-            } ?: call.respond(HttpStatusCode.NotFound,"User not found")
-        } ?: call.respond(HttpStatusCode.BadGateway,"Provide Input!!")
-    }
-
-    post("/users/verify") {
+    post("/verify") {
         val username = call.parameters["username"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Username not passed!")
         val verifyCode = call.parameters["verifyCode"]?.toIntOrNull() ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid or missing verify code!")
 
@@ -156,7 +92,7 @@ fun Routing.userRoute(
             val user = userService.findUserByUsernameOrNull(username) ?: return@post call.respond(HttpStatusCode.NotFound, "User not found!")
 
             if(!user.verified) {
-                user.verified = isVerified
+                user.verified = true
                 val updateSuccess = userService.updateUser(user)
                 if (updateSuccess) {
                     call.respond(HttpStatusCode.OK, user)
@@ -171,20 +107,24 @@ fun Routing.userRoute(
             call.respond(HttpStatusCode.InternalServerError, e.message ?: "An unexpected error occurred")
         }
     }
-}
 
-/*
-suspend fun sendEmail(to: String, subject: String, content: String) {
-    val fromEmail = Email("info@frederikkohler.de")
-    val toEmail = Email(to)
-    val emailContent = Content("text/plain", content)
-    val mail = Mail(fromEmail, subject, toEmail, emailContent)
+    post("/login") {
+        val receivedLoginData = call.receive<Login>()
+        val loginPasswordOrNull = userPasswordService.findPasswordByUserNameOrNull(receivedLoginData.username)
+        val userOrNull = userService.findUserByUsernameOrNull(receivedLoginData.username)
 
-    val sg = SendGrid("YOUR_SENDGRID_API_KEY")
-    val request = Request()
-    request.method = Method.POST
-    request.endpoint = "mail/send"
-    request.body = mail.build()
-    sg.api(request)
+        if (loginPasswordOrNull != null && userOrNull != null && loginPasswordOrNull == receivedLoginData.password) {
+            val token = LoginService.makeToken(userOrNull)
+
+            call.respondText(token)
+        } else {
+            if (userOrNull != null) {
+                call.respond(HttpStatusCode.Unauthorized, "Invalid password")
+            } else {
+                call.respond(HttpStatusCode.Unauthorized, "User not found")
+            }
+        }
+    }
+
+    post("/password-reset") {}
 }
- */

@@ -2,13 +2,7 @@ package de.frederikkohler.service
 
 import io.ktor.http.content.*
 import kotlinx.coroutines.runBlocking
-import java.awt.Image
-import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
-import javax.imageio.ImageIO
 import java.util.*
 
 class ImageUploadService {

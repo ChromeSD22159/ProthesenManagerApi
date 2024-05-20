@@ -5,15 +5,12 @@ import de.frederikkohler.mysql.entity.user.UserPasswordService
 import de.frederikkohler.mysql.entity.user.UserProfileService
 import de.frederikkohler.mysql.entity.user.UserService
 import de.frederikkohler.mysql.entity.user.UserVerifyTokenService
-import de.frederikkohler.routes.postRoutes
-import de.frederikkohler.routes.publicRoutes.communityRoutes
-import de.frederikkohler.routes.profileRoute
-import de.frederikkohler.routes.protectedRoutes.protectedRoutes
-import de.frederikkohler.routes.userRoute
-import io.ktor.http.*
+import de.frederikkohler.routes.protectedRoutes.protectedPostRoutes
+import de.frederikkohler.routes.protectedRoutes.protectedProfileRoute
+import de.frederikkohler.routes.publicRoutes.publicUserRoutes
+import de.frederikkohler.routes.protectedRoutes.protectedUserRoute
+import de.frederikkohler.routes.publicRoutes.staticRoutes
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.get
 
@@ -25,16 +22,10 @@ fun Application.configureRouting(
     postService: PostService =get(),
 ) {
     routing {
-        authenticate {
-            get("/protected") {
-                call.respond(HttpStatusCode.OK,"Protected route accessed successfully")
-            }
-        }
-
-        communityRoutes(userService, userPasswordService)
-        userRoute(userService, userProfileService, userPasswordService, userVerifyTokenService)
-        profileRoute(userProfileService)
-        protectedRoutes(userService)
-        postRoutes(postService, userService)
+        publicUserRoutes(userService, userPasswordService, userProfileService, userVerifyTokenService)
+        protectedUserRoute(userService, userProfileService, userPasswordService)
+        protectedProfileRoute(userProfileService)
+        protectedPostRoutes(postService, userService)
+        staticRoutes()
     }
 }

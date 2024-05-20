@@ -19,7 +19,6 @@ interface UserService {
 }
 
 class UserServiceDataService : UserService {
-
     private fun resultRowToUser(row: ResultRow): User {
         return User(
             id = row[Users.id],
