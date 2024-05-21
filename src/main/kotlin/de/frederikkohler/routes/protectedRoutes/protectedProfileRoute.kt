@@ -12,7 +12,7 @@ import org.jetbrains.exposed.exceptions.ExposedSQLException
 
 fun Routing.protectedProfileRoute(userProfileService: UserProfileService) {
     authenticate {
-        get("user/profile/{id}") {
+        get("/user/profile/{id}") {
             val id=call.parameters["id"]?.toInt()
             id?.let { id ->
 
@@ -23,7 +23,7 @@ fun Routing.protectedProfileRoute(userProfileService: UserProfileService) {
             } ?: call.respond(HttpStatusCode.BadGateway,"Provide Input!!")
         }
 
-        put("user/profile/{id}"){
+        put("/user/profile/{id}"){
             try {
                 val user=call.receive<UserProfile>()
                 val result=userProfileService.updateProfile(user)
