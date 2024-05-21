@@ -12,6 +12,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.24"
 }
 
+ktor {
+    fatJar {
+        archiveFileName.set("fat.jar")
+    }
+}
+
 group = "de.frederikkohler"
 version = "0.0.1"
 
