@@ -12,25 +12,14 @@ class DatabasesManager(
     private val env: Dotenv = dotenv()
 ) {
 
-    private fun getDatabaseInstanceDevLocal(
+    private fun getDatabaseInstance(
         port: Int? = env["DB_PORT"].toInt(),
         databaseName: String? = env["DB_NAME"],
         host: String? = env["DB_HOST"],
         username: String? = env["DB_USERNAME"],
         password: String? = env["DB_PASSWORD"]
     ): Database {
-        val driverClassName = "com.mysql.cj.jdbc.Driver"
-        val config = "jdbc:mysql://$host:$port/$databaseName?user=$username&password=$password"
-        return Database.connect(provideDataSource(config,driverClassName))
-    }
-
-    private fun getDatabaseInstanceDevIonos(
-        port: Int? = 3306,
-        databaseName: String? = "PmApiDev",
-        host: String? = "prothesenmanager.frederikkohler.de",
-        username: String? = "PMMANAGER",
-        password: String? = "Fr3d3rik@Kohler!!"
-    ): Database {
+        println("Using database $databaseName on $host")
         val driverClassName = "com.mysql.cj.jdbc.Driver"
         val config = "jdbc:mysql://$host:$port/$databaseName?user=$username&password=$password"
         return Database.connect(provideDataSource(config,driverClassName))
@@ -53,6 +42,6 @@ class DatabasesManager(
     }
 
     init {
-        connection = getDatabaseInstanceDevIonos()
+        connection = getDatabaseInstance()
     }
 }

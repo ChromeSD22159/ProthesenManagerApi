@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.ir.backend.js.compile
 
+// ./gradlew build
+
 val ktorVersion: String by project
 val kotlinVersion: String by project
 val logbackVersion: String by project
