@@ -1,6 +1,12 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.jetbrains.kotlin.ir.backend.js.compile
 
+// https://gist.github.com/ellet0/28e723ce3adbb3ddbd9d1ce5befe977b
 // ./gradlew build
+// ./gradlew clean build
+// cd /var/www/vhosts/frederikkohler.de/prothesenmanager.frederikkohler.de
+// cd /var/www/vhosts/frederikkohler.de/prothesenmanager.frederikkohler.de/build/libs/
+// https://www.youtube.com/watch?v=DJwvxLB1yB8&t=2633s
 
 val ktorVersion: String by project
 val kotlinVersion: String by project
@@ -12,12 +18,7 @@ plugins {
     kotlin("jvm") version "1.9.24"
     id("io.ktor.plugin") version "2.3.10"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.24"
-}
-
-ktor {
-    fatJar {
-        archiveFileName.set("fat.jar")
-    }
+    id("com.github.johnrengelman.shadow") version "8.1.1" // Creat JS file
 }
 
 group = "de.frederikkohler"
@@ -25,6 +26,8 @@ version = "0.0.1"
 
 application {
     mainClass.set("de.frederikkohler.ApplicationKt")
+    project.setProperty("mainClassName", mainClass.get()) // set main for shadow find the class
+
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=true")
 }
 
@@ -32,7 +35,7 @@ repositories {
     mavenCentral()
 }
 
-// val sshAntTask = configurations.create("sshAntTask")
+val sshAntTask = configurations.create("sshAntTask") //
 
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm")
@@ -57,7 +60,13 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("org.flywaydb:flyway-core:9.16.0")
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
-    //sshAntTask("org.apache.ant:ant-jsch:1.10.13")
+    sshAntTask("org.apache.ant:ant-jsch:1.10.14") // access ssh
+}
+
+ktor {
+    fatJar {
+        archiveFileName.set("fat.jar")
+    }
 }
 
 val javaVersion = JavaVersion.VERSION_17
@@ -71,157 +80,75 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.jvmTarget = javaVersion.toString()
 }
 
-/*
-
-val buildingJarFileName = "temp-server.jar"
-val startingJarFileName = "server.jar"
-
-val serverUser = "root"
-val serverHost = "YOUR_IP_ADDRESS"
-val serverSshKey = file("keys/id_rsa")
-val deleteLog = true
-val lockFileName = ".serverLock"
-
-val serviceName = "ktor-server"
-val serverFolderName = "app"
-
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+    manifest {
+        attributes(
+            "Main-Class" to application.mainClass.get()
+        )
+    }
+}
 
 ant.withGroovyBuilder {
     "taskdef"(
         "name" to "scp",
         "classname" to "org.apache.tools.ant.taskdefs.optional.ssh.Scp",
-        "classpath" to configurations["sshAntTask"].asPath
+        "classpath" to configurations.get("sshAntTask").asPath
     )
     "taskdef"(
         "name" to "ssh",
         "classname" to "org.apache.tools.ant.taskdefs.optional.ssh.SSHExec",
-        "classpath" to configurations["sshAntTask"].asPath
+        "classpath" to configurations.get("sshAntTask").asPath
     )
 }
 
-fun sudoIfNeeded(): String {
-    if (serverUser.trim() == "root") {
-        return ""
-    }
-    return "sudo "
-}
-
-fun sshCommand(command: String, knownHosts: File) = ant.withGroovyBuilder {
-    "ssh"(
-        "host" to serverHost,
-        "username" to serverUser,
-        "keyfile" to serverSshKey,
-        "trust" to true,
-        "knownhosts" to knownHosts,
-        "command" to command
-    )
-}
-
-task("cleanAndDeploy") {
-    dependsOn("clean", "deploy")
-}
-
+// ./gradlew deploy
+// de.frederikkohler.ProthesenManagerApi-all // de.frederikkohler.ProthesenManagerApi-$version-all.jar
+// "de.frederikkohler.ProthesenManagerApi-all.jar"
 task("deploy") {
-    dependsOn("buildFatJar")
+    dependsOn("clean", "shadowJar")
     ant.withGroovyBuilder {
         doLast {
             val knownHosts = File.createTempFile("knownhosts", "txt")
+            val user = "root"
+            val host = "frederikkohler.de"
+            val key = file("keys/protheseManagerApiKey")
+            val jarFileName = "de.frederikkohler.fat.jar"
+            val targetFolder = "/var/www/vhosts/frederikkohler.de/prothesenmanager.frederikkohler.de/test/"
             try {
-                println("Make sure the $serverFolderName folder exists if doesn't")
-                sshCommand(
-                    "mkdir -p \$HOME/$serverFolderName",
-                    knownHosts
-                )
-                println("Lock the server requests...")
-                sshCommand(
-                    "touch \$HOME/$serverFolderName/$lockFileName",
-                    knownHosts
-                )
-                println("Deleting the previous building jar file if exists...")
-                sshCommand(
-                    "rm \$HOME/$serverFolderName/$buildingJarFileName -f",
-                    knownHosts
-                )
-                println("Uploading the new jar file...")
-                val file = file("build/libs/$buildingJarFileName")
                 "scp"(
-                    "file" to file,
-                    "todir" to "$serverUser@$serverHost:/\$HOME/$serverFolderName",
-                    "keyfile" to serverSshKey,
+                    "file" to file("build/libs/$jarFileName"),
+                    "todir" to "$user@$host:$targetFolder", // folder on the server to push
+                    "keyfile" to key,
                     "trust" to true,
                     "knownhosts" to knownHosts
                 )
-                println("Upload done, attempt to stop the current ktor server...")
-                sshCommand(
-                    "${sudoIfNeeded()}systemctl stop $serviceName",
-                    knownHosts
+                "ssh"(
+                    "host" to host,
+                    "username" to user,
+                    "keyfile" to key,
+                    "trust" to true,
+                    "knownhosts" to knownHosts,
+                    "command" to "mv $targetFolder$jarFileName ${targetFolder}test.jar"
                 )
-                println("Server stopped, attempt to delete the current ktor server jar...")
-                sshCommand(
-                    "rm \$HOME/$serverFolderName/$startingJarFileName -f",
-                    knownHosts,
+                "ssh"(
+                    "host" to host,
+                    "username" to user,
+                    "keyfile" to key,
+                    "trust" to true,
+                    "knownhosts" to knownHosts,
+                    "command" to "systemctl stop jwtauth"
                 )
-                println("The old ktor server jar file has been deleted, now let's rename the new jar file")
-                sshCommand(
-                    "mv \$HOME/$serverFolderName/$buildingJarFileName \$HOME/$serverFolderName/$startingJarFileName",
-                    knownHosts
+                "ssh"(
+                    "host" to host,
+                    "username" to user,
+                    "keyfile" to key,
+                    "trust" to true,
+                    "knownhosts" to knownHosts,
+                    "command" to "systemctl start jwtauth"
                 )
-                if (deleteLog) {
-                    sshCommand(
-                        "rm /var/log/$serviceName.log -f",
-                        knownHosts
-                    )
-                    println("The $serviceName log at /var/log/$serviceName.log has been removed")
-                }
-                println("Unlock the server requests...")
-                sshCommand(
-                    "rm \$HOME/$serverFolderName/$lockFileName -f",
-                    knownHosts
-                )
-                println("Now let's start the ktor server service!")
-                sshCommand(
-                    "${sudoIfNeeded()}systemctl start $serviceName",
-                    knownHosts
-                )
-                println("Done!")
-            } catch (e: Exception) {
-                println("Error: ${e.message}")
             } finally {
                 knownHosts.delete()
             }
         }
     }
 }
-
-task("upgrade") {
-    ant.withGroovyBuilder {
-        doLast {
-            val knownHosts = File.createTempFile("knownhosts", "txt")
-            try {
-                println("Update repositories...")
-                sshCommand(
-                    "${sudoIfNeeded()}apt update",
-                    knownHosts
-                )
-                println("Update packages...")
-                sshCommand(
-                    "${sudoIfNeeded()}apt upgrade -y",
-                    knownHosts
-                )
-                println("Done")
-            } catch (e: Exception) {
-                println("Error while upgrading server packages: ${e.message}")
-            } finally {
-                knownHosts.delete()
-            }
-        }
-    }
-}
-
-abstract class ProjectNameTask : DefaultTask() {
-    @TaskAction
-    fun greet() = println("The project name is ${project.name}")
-}
-
-tasks.register<ProjectNameTask>("projectName")
-*/
