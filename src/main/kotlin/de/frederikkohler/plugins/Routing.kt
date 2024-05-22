@@ -26,6 +26,6 @@ fun Application.configureRouting(
         protectedUserRoute(userService, userProfileService, userPasswordService)
         protectedProfileRoute(userProfileService)
         protectedPostRoutes(postService, userService)
-        staticRoutes()
+        staticRoutes(true)
     }
 }

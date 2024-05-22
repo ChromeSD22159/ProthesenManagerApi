@@ -2,29 +2,26 @@ package de.frederikkohler.service
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import de.frederikkohler.model.user.User
-import de.frederikkohler.model.user.UserPassword
-import de.frederikkohler.mysql.entity.user.UserPasswordServiceDataService
 import de.frederikkohler.mysql.entity.user.UserRolesServiceDataService
-import de.frederikkohler.mysql.entity.user.UserServiceDataService
+import io.github.cdimascio.dotenv.Dotenv
+import io.github.cdimascio.dotenv.dotenv
 import org.jetbrains.exposed.sql.Database
 
-class DatabasesManager {
-    var connection: Database? = null
+class DatabasesManager(
+    var connection: Database? = null,
+    private val env: Dotenv = dotenv()
+) {
 
     private fun getDatabaseInstanceDevLocal(
-        port: Int? = 8889,
-        databaseName: String? = "ProthesenManagerApiDev",
-        host: String? = "localhost",
-        username: String? = "root",
-        password: String? = "root"
+        port: Int? = env["DB_PORT"].toInt(),
+        databaseName: String? = env["DB_NAME"],
+        host: String? = env["DB_HOST"],
+        username: String? = env["DB_USERNAME"],
+        password: String? = env["DB_PASSWORD"]
     ): Database {
         val driverClassName = "com.mysql.cj.jdbc.Driver"
         val config = "jdbc:mysql://$host:$port/$databaseName?user=$username&password=$password"
-
-        val db= Database.connect(provideDataSource(config,driverClassName))
-
-        return db
+        return Database.connect(provideDataSource(config,driverClassName))
     }
 
     private fun getDatabaseInstanceDevIonos(
@@ -36,10 +33,7 @@ class DatabasesManager {
     ): Database {
         val driverClassName = "com.mysql.cj.jdbc.Driver"
         val config = "jdbc:mysql://$host:$port/$databaseName?user=$username&password=$password"
-
-        val db= Database.connect(provideDataSource(config,driverClassName))
-
-        return db
+        return Database.connect(provideDataSource(config,driverClassName))
     }
 
     private fun provideDataSource(url:String,driverClass:String): HikariDataSource {
