@@ -11,6 +11,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.time.LocalDateTime
 
 fun Routing.protectedPostRoutes(postService: PostService, userService: UserService) {
 
@@ -56,7 +57,9 @@ fun Routing.protectedPostRoutes(postService: PostService, userService: UserServi
                             description = description,
                             images = emptyList(),
                             likesCount = 0,
-                            starsCount = 0
+                            starsCount = 0,
+                            createdAt = LocalDateTime.now().toString(),
+                            editAt = null
                         )
                     )
 

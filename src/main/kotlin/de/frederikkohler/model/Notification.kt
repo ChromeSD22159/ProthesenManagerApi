@@ -16,7 +16,7 @@ enum class NotificationType(val displayName: String) {
 @Serializable
 class Notification (
     val id: Int = 0,
-    val userID: Int,
+    var userID: Int,
     val type: String,
     val message: String,
     val isRead: Boolean = false,

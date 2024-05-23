@@ -3,10 +3,12 @@ package de.frederikkohler.mysql.entity.post
 import de.frederikkohler.model.post.*
 import de.frederikkohler.model.user.Users
 import de.frederikkohler.plugins.dbQuery
+import de.frederikkohler.service.DateTimeConverter
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Serializable
 data class PostDetails(
@@ -43,6 +45,8 @@ class PostServiceDataService : PostService {
             it[description] = post.description
             it[likes] = post.likesCount
             it[stars] = post.starsCount
+            it[createdAt] = LocalDateTime.now()
+            it[editAt] = null
         }
         insertStatement.resultedValues?.singleOrNull()?.let { row ->
             val postId = row[Posts.id]
@@ -53,7 +57,9 @@ class PostServiceDataService : PostService {
                 description = row[Posts.description],
                 images = emptyList(),
                 likesCount = row[Posts.likes],
-                starsCount = row[Posts.stars]
+                starsCount = row[Posts.stars],
+                createdAt = row[Posts.createdAt].toString(),
+                editAt = row[Posts.editAt]?.toString()
             )
         }
     }
@@ -109,19 +115,22 @@ class PostServiceDataService : PostService {
         Posts.innerJoin(Users)
             .slice(Posts.id, Users.username, Posts.description, Posts.likes, Posts.stars)
             .select {(Posts.id eq postID) }
-            .map {
+            .map { it ->
                 val postId = it[Posts.id]
                 val likesCount = PostLikes.select { PostLikes.postId eq postId }.count()
                 val starsCount = PostStars.select { PostStars.postId eq postId }.count()
                 val images = PostImages.select { PostImages.postId eq postId }
-                    .map { it[PostImages.imageUrl] }
+                    .map { post -> post[PostImages.imageUrl] }
+
                 Post(
                     id = postId,
                     username = it[Users.username],
                     description = it[Posts.description],
                     images = images,
                     likesCount = likesCount.toInt(),
-                    starsCount = starsCount.toInt()
+                    starsCount = starsCount.toInt(),
+                    createdAt = it[Posts.createdAt].toString(),
+                    editAt = it[Posts.editAt].toString()
                 )
             }
             .singleOrNull()
@@ -144,7 +153,9 @@ class PostServiceDataService : PostService {
                     description = row[Posts.description],
                     images = images,
                     likesCount = likesCount.toInt(),
-                    starsCount = starsCount.toInt()
+                    starsCount = starsCount.toInt(),
+                    editAt = row[Posts.editAt].toString(),
+                    createdAt = row[Posts.createdAt].toString(),
                 )
             }
     }
@@ -182,3 +193,4 @@ class PostServiceDataService : PostService {
         likeToDelete
     }
 }
+

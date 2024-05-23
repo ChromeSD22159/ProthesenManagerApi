@@ -1,10 +1,13 @@
 package de.frederikkohler.model.post
 
+import de.frederikkohler.model.Notifications.defaultExpression
 import de.frederikkohler.model.user.User
 import de.frederikkohler.model.user.UserProfile
 import de.frederikkohler.model.user.Users
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
 
 @Serializable
 data class Post(
@@ -13,7 +16,9 @@ data class Post(
     val description: String,
     val images: List<String>,
     val likesCount: Int=0,
-    val starsCount: Int=0
+    val starsCount: Int=0,
+    val createdAt: String,
+    val editAt: String?
 )
 
 object Posts : Table() {
@@ -22,6 +27,8 @@ object Posts : Table() {
     val description = varchar("description", 255)
     val likes = integer("likes").default(0)
     val stars = integer("stars").default(0)
+    val createdAt = datetime("createdAt").defaultExpression(CurrentDateTime)
+    val editAt = datetime("editAt").nullable()
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -84,3 +91,13 @@ object PostComments: Table() {
 
     override val primaryKey = PrimaryKey(postId, userId)
 }
+
+
+/*
+ALTER TABLE Posts
+ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN editAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE Posts
+MODIFY COLUMN editAt DATETIME DEFAULT NULL;
+ */

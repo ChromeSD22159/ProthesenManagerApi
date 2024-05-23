@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
 
 interface NotificationService {
-    suspend fun getAllNotificationsForUser(userID: Int): List<Notification>
+    suspend fun getAllNotificationsForUser(userID: Int, count: Int? = 20, sort: String? = "desc"): List<Notification>
     suspend fun addNotification(notification: Notification): Boolean
     suspend fun deleteNotification(notificationId: Int): Boolean
     suspend fun markAsRead(notificationId: Int): Boolean
@@ -16,7 +16,6 @@ interface NotificationService {
 }
 
 class NotificationServiceDataService: NotificationService {
-
     private fun resultRowToNotification(row: ResultRow): Notification {
         return Notification(
             id = row[Notifications.id],
@@ -39,10 +38,12 @@ class NotificationServiceDataService: NotificationService {
         insertStmt.resultedValues?.singleOrNull() != null
     }
 
-    override suspend fun getAllNotificationsForUser(userID: Int): List<Notification> = dbQuery {
+    override suspend fun getAllNotificationsForUser(userID: Int, count: Int?, sort: String?): List<Notification> = dbQuery {
         Notifications
             .selectAll()
-            .where { (Notifications.userID eq userID) }
+            .orderBy(Notifications.createdAt, SortOrder.DESC)
+            .limit(count ?: 5)
+            .where { Notifications.userID eq userID }
             .map { resultRowToNotification(it) }
     }
 
