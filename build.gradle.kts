@@ -1,12 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.jetbrains.kotlin.ir.backend.js.compile
-
-// https://gist.github.com/ellet0/28e723ce3adbb3ddbd9d1ce5befe977b
-// ./gradlew build
-// ./gradlew clean build
-// cd /var/www/vhosts/frederikkohler.de/prothesenmanager.frederikkohler.de
-// cd /var/www/vhosts/frederikkohler.de/prothesenmanager.frederikkohler.de/build/libs/
-// https://www.youtube.com/watch?v=DJwvxLB1yB8&t=2633s
+import java.io.File
 
 val ktorVersion: String by project
 val kotlinVersion: String by project
@@ -14,11 +8,31 @@ val logbackVersion: String by project
 val koinKtor: String by project
 val hikaricpVersion: String by project
 
+fun readBuildNumber(): Int {
+    val versionFile = File("version.txt")
+    if (!versionFile.exists()) {
+        versionFile.writeText("1")
+    }
+    return versionFile.readText().trim().toInt()
+}
+
+fun incrementBuildNumber(): Int {
+    val versionFile = File("version.txt")
+    val currentVersion = readBuildNumber()
+    val newVersion = currentVersion + 1
+    versionFile.writeText(newVersion.toString())
+    return newVersion
+}
+
+
+val currentBuildNumber = incrementBuildNumber()
+val sshAntTask = configurations.create("sshAntTask")
+
 plugins {
     kotlin("jvm") version "1.9.24"
     id("io.ktor.plugin") version "2.3.10"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.24"
-    id("com.github.johnrengelman.shadow") version "8.1.1" // Creat JS file
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "de.frederikkohler"
@@ -26,7 +40,7 @@ version = "0.0.1"
 
 application {
     mainClass.set("de.frederikkohler.ApplicationKt")
-    project.setProperty("mainClassName", mainClass.get()) // set main for shadow find the class
+    project.setProperty("mainClassName", mainClass.get())
 
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=true")
 }
@@ -34,8 +48,6 @@ application {
 repositories {
     mavenCentral()
 }
-
-val sshAntTask = configurations.create("sshAntTask") //
 
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm")
@@ -60,12 +72,12 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("org.flywaydb:flyway-core:9.16.0")
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
-    sshAntTask("org.apache.ant:ant-jsch:1.10.14") // access ssh
+    sshAntTask("org.apache.ant:ant-jsch:1.10.14")
 }
 
 ktor {
     fatJar {
-        archiveFileName.set("fat.jar")
+        archiveFileName.set("fat-$currentBuildNumber.jar")
     }
 }
 
@@ -101,23 +113,21 @@ ant.withGroovyBuilder {
     )
 }
 
-// ./gradlew deploy
-// de.frederikkohler.ProthesenManagerApi-all // de.frederikkohler.ProthesenManagerApi-$version-all.jar
-// "de.frederikkohler.ProthesenManagerApi-all.jar"
 task("deploy") {
     dependsOn("clean", "shadowJar")
-    ant.withGroovyBuilder {
-        doLast {
-            val knownHosts = File.createTempFile("knownhosts", "txt")
-            val user = "root"
-            val host = "frederikkohler.de"
-            val key = file("keys/protheseManagerApiKey")
-            val jarFileName = "de.frederikkohler.fat.jar"
-            val targetFolder = "/var/www/vhosts/frederikkohler.de/prothesenmanager.frederikkohler.de/test/"
-            try {
+    doLast {
+        val knownHosts = File.createTempFile("knownhosts", "txt")
+        val user = "root"
+        val host = "frederikkohler.de"
+        val key = file("keys/protheseManagerApiKey")
+        val jarFileName = "fat-$currentBuildNumber.jar"
+        val remoteDir = "/var/www/vhosts/frederikkohler.de/prothesenmanager.frederikkohler.de/"
+        val archiveDir = "${remoteDir}archive/"
+        try {
+            ant.withGroovyBuilder {
                 "scp"(
                     "file" to file("build/libs/$jarFileName"),
-                    "todir" to "$user@$host:$targetFolder", // folder on the server to push
+                    "todir" to "$user@$host:$remoteDir",
                     "keyfile" to key,
                     "trust" to true,
                     "knownhosts" to knownHosts
@@ -128,27 +138,47 @@ task("deploy") {
                     "keyfile" to key,
                     "trust" to true,
                     "knownhosts" to knownHosts,
-                    "command" to "mv $targetFolder$jarFileName ${targetFolder}test.jar"
+                    "command" to """
+                        if [ ! -d "$archiveDir" ]; then
+                            mkdir -p $archiveDir
+                        fi
+                        if [ -f ${remoteDir}fat.jar ]; then
+                            mv ${remoteDir}fat.jar ${archiveDir}fat-${currentBuildNumber-1}.jar
+                        fi
+                        systemctl stop prothesenmanager.service
+                        mv ${remoteDir}$jarFileName ${remoteDir}fat.jar
+                        systemctl start prothesenmanager.service
+                    """
                 )
-                "ssh"(
-                    "host" to host,
-                    "username" to user,
-                    "keyfile" to key,
-                    "trust" to true,
-                    "knownhosts" to knownHosts,
-                    "command" to "systemctl stop jwtauth"
-                )
-                "ssh"(
-                    "host" to host,
-                    "username" to user,
-                    "keyfile" to key,
-                    "trust" to true,
-                    "knownhosts" to knownHosts,
-                    "command" to "systemctl start jwtauth"
-                )
-            } finally {
-                knownHosts.delete()
             }
+        } finally {
+            knownHosts.delete()
+        }
+    }
+}
+
+
+task("sshTest") {
+    doLast {
+        val knownHosts = File.createTempFile("knownhosts", "txt")
+        val user = "root"
+        val host = "frederikkohler.de"
+        val key = file("keys/protheseManagerApiKey")
+
+        try {
+            ant.withGroovyBuilder {
+                "ssh"(
+                    "host" to host,
+                    "username" to user,
+                    "keyfile" to key,
+                    "trust" to true,
+                    "knownhosts" to knownHosts,
+                    "command" to "echo SSH connection successful",
+                    "verbose" to true
+                )
+            }
+        } finally {
+            knownHosts.delete()
         }
     }
 }
