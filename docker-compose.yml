@@ -1,0 +1,42 @@
+version: '0.0.1'
+services:
+  prothesen-manager-server:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    volumes:
+      - data:/app/uploads
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+    environment:
+      - ENV=${ENV}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+  db:
+    container_name: mysql
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
+    ports:
+      - '${DB_PORT}:3306'
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u ${DB_USERNAME} --password=${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+volumes:
+  data:
+  db:
+
+  # Service für den Prothesen-Manager-Server gesehen auf:
+  # https://github.com/PoisonedYouth/ktor-encryption-server/tree/master/postman
