@@ -35,6 +35,6 @@ out/
 ### VS Code ###
 .vscode/
 keys/
+/.env_
 /.env
 version.txt
-/version.txt
