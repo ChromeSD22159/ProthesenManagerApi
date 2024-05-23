@@ -27,7 +27,7 @@ This project is based on Ktor, a lightweight framework for building web applicat
             - Current Value: `http://localhost:8080`
         - **KTOR ProthesenApi Live**:
             - Variable Name: `base_url`
-            - Initial Value: `https://prothesenmanager.frederikkohler.de`
-            - Current Value: `https://prothesenmanager.frederikkohler.de`
+          - Initial Value: [Contact frederik.kohler for Server Staging DB URL](mailto:info@frederikkohler.de)
+          - Current Value: [Contact frederik.kohler for Server Staging DB URL](mailto:info@frederikkohler.de)
 
 Thank you for using my Ktor project! If you have any questions or need assistance, feel free to reach out.
