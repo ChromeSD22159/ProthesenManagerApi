@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "99a8ebde-2622-4660-9cf0-997a4c42b85b",
 		"name": "ProthesenManagerApi",
-		"description": "All Routes Testing for ProthesenManagerApi",
+		"description": "This document describes the different routes of the ProsthesesManagerApi and how they can be tested with Postman. Additionally, it explains how two environment variables can be set up to switch between the local development environment and the live environment.\n\n1. **KTOR LOCAL**\n    \n    - **Variable Name**: `base_url`\n        \n    - **Initial Value**: `http://localhost:8080` (Customize to your local URL)\n        \n    - **Current Value**: `http://localhost:8080`\n        \n2. **KTOR ProthesenApi Live**\n    \n    - **Variable Name**: `base_url`\n        \n    - **Initial Value**: `https://prothesenmanager.frederikkohler.de`\n        \n    - **Current Value**: `https://prothesenmanager.frederikkohler.de`",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "12938676"
 	},
