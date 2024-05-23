@@ -19,7 +19,13 @@ fun Routing.protectedFollowerRoutes() {
     // Ich möchte einen User folgen
     post("user/{id}/follow") {
         val userID = call.parameters["id"]?.toIntOrNull()
+
+        println("Received follow request: userID=$userID")
+
         val followUserID = call.receive<FollowRequest>().followUserID
+
+        println("Received follow request: userID=$userID, followUserID=$followUserID")
+
         if (userID == null) {
             return@post call.respond(HttpStatusCode.BadRequest, "Invalid or missing parameters")
         }

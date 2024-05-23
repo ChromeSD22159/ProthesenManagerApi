@@ -5,6 +5,7 @@ import de.frederikkohler.model.user.Users
 import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 
 interface UserService {
     suspend fun addUserOrNull(user: User): User?
@@ -53,22 +54,24 @@ class UserServiceDataService : UserService {
     }
 
     override suspend fun searchUser(query: String): List<User> = dbQuery{
-        Users.select { (Users.username.lowerCase() like "%${query.lowercase()}%")}
+        Users.selectAll().where { (Users.username.lowerCase() like "%${query.lowercase()}%") }
             .map { resultRowToUser(it) }
     }
 
     override suspend fun findUserByUserIdOrNull(id: Int): User? = dbQuery{
-        Users.select { (Users.id eq id) }.map { resultRowToUser(it) }.singleOrNull()
+        Users.selectAll().where { (Users.id eq id) }.map { resultRowToUser(it) }.singleOrNull()
     }
 
     override suspend fun findUserByUsernameOrNull(username: String): User? = dbQuery {
-        Users.select { Users.username eq username }
+        Users.selectAll().where { Users.username eq username }
             .map { resultRowToUser(it) }
             .firstOrNull()
     }
 
     override suspend fun findUserByRoleIdOrNull(roleID: Int): User? = dbQuery {
-        Users.select { (Users.role eq roleID) }
+        Users
+            .selectAll()
+            .where { (Users.role eq roleID) }
             .map { resultRowToUser(it) }
             .firstOrNull()
     }

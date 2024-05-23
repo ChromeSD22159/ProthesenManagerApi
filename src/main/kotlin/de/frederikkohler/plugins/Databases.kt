@@ -1,5 +1,7 @@
 package de.frederikkohler.plugins
 
+import de.frederikkohler.model.Notifications
+import de.frederikkohler.model.friendlist.FriendShips
 import de.frederikkohler.model.post.*
 import de.frederikkohler.model.post.Posts
 import de.frederikkohler.model.user.*
@@ -34,6 +36,8 @@ fun Application.configureDatabases(): Database {
             PostLikes,
             PostStars,
             PostComments,
+            FriendShips,
+            Notifications
         )
 
         launch(Dispatchers.IO) {
