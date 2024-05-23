@@ -36,3 +36,5 @@ out/
 .vscode/
 keys/
 /.env
+version.txt
+/version.txt
