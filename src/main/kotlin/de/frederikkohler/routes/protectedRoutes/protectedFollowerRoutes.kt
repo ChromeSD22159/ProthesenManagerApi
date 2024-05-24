@@ -16,7 +16,25 @@ data class FollowerRequest(val followerUserID: Int)
 
 
 fun Routing.protectedFollowerRoutes() {
-    // Ich möchte einen User folgen
+
+    /**
+     * Route to follow a user
+     * URL: {{base_url}}/user/{id}/follow
+     * Method: POST
+     *
+     * Path Parameters:
+     * - id: Int (ID of the user who wants to follow another user)
+     *
+     * Request Body:
+     * {
+     *   "followUserID": Int (ID of the user to be followed)
+     * }
+     *
+     * Responses:
+     * - 200 OK: Follow operation successful, result returned
+     * - 400 Bad Request: Invalid or missing parameters
+     * - 500 Internal Server Error: Could not follow user
+     */
     post("user/{id}/follow") {
         val userID = call.parameters["id"]?.toIntOrNull()
 
@@ -37,7 +55,24 @@ fun Routing.protectedFollowerRoutes() {
         }
     }
 
-    // Ich möchte einen User nicht mehr folgen
+    /**
+     * Route to unfollow a user
+     * URL: {{base_url}}/user/{id}/unfollow
+     * Method: DELETE
+     *
+     * Path Parameters:
+     * - id: Int (ID of the user who wants to unfollow another user)
+     *
+     * Request Body:
+     * {
+     *   "followUserID": Int (ID of the user to be unfollowed)
+     * }
+     *
+     * Responses:
+     * - 200 OK: Unfollow operation successful
+     * - 400 Bad Request: Invalid or missing parameters
+     * - 500 Internal Server Error: Could not unfollow user
+     */
     delete("user/{id}/unfollow") {
         val userID = call.parameters["id"]?.toIntOrNull()
         val followUserID = call.receive<FollowRequest>().followUserID
@@ -53,7 +88,18 @@ fun Routing.protectedFollowerRoutes() {
         }
     }
 
-    // ich möchte meine FollowerCount bekommen
+    /**
+     * Route to get the follower count
+     * URL: {{base_url}}/user/{userID}/followCount
+     * Method: GET
+     *
+     * Path Parameters:
+     * - userID: Int (ID of the user whose follower count is requested)
+     *
+     * Responses:
+     * - 200 OK: Follower count returned
+     * - 400 Bad Request: Invalid or missing userID
+     */
     get("/user/{userID}/followCount") {
         val userID = call.parameters["userID"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid or missing userID")
 
@@ -61,7 +107,18 @@ fun Routing.protectedFollowerRoutes() {
         call.respond(resultCount)
     }
 
-    // ich möchte meine Follower bekommen
+    /**
+     * Route to get the list of followers
+     * URL: {{base_url}}/user/{userID}/followList
+     * Method: GET
+     *
+     * Path Parameters:
+     * - userID: Int (ID of the user whose follower list is requested)
+     *
+     * Responses:
+     * - 200 OK: Follower list returned
+     * - 400 Bad Request: Invalid or missing userID
+     */
     get("/user/{userID}/followList") {
         val userID = call.parameters["userID"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid or missing userID")
 
@@ -69,7 +126,24 @@ fun Routing.protectedFollowerRoutes() {
         call.respond(resultCount)
     }
 
-    // ich möchte jemand der mir folgt entfernen
+    /**
+     * Route to remove a follower
+     * URL: {{base_url}}/user/{id}/removeFollower
+     * Method: DELETE
+     *
+     * Path Parameters:
+     * - id: Int (ID of the user who wants to remove a follower)
+     *
+     * Request Body:
+     * {
+     *   "followerUserID": Int (ID of the follower to be removed)
+     * }
+     *
+     * Responses:
+     * - 200 OK: Follower successfully removed
+     * - 400 Bad Request: Invalid user ID or follower user ID
+     * - 500 Internal Server Error: Unable to remove follower
+     */
     delete("user/{id}/removeFollower") {
         val userID = call.parameters["id"]?.toIntOrNull()
         val followerUserID = call.receive<FollowerRequest>()

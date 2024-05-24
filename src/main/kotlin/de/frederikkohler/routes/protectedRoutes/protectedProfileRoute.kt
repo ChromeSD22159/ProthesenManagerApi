@@ -12,6 +12,19 @@ import org.jetbrains.exposed.exceptions.ExposedSQLException
 
 fun Routing.protectedProfileRoute(userProfileService: UserProfileService) {
     authenticate {
+        /**
+         * Route to retrieve a user profile by ID
+         * URL: {{base_url}}/user/profile/{id}
+         * Method: GET
+         *
+         * Path Parameters:
+         * - id: Int (ID of the user profile to retrieve) (required)
+         *
+         * Responses:
+         * - 200 OK: User profile data
+         * - 404 Not Found: User not found
+         * - 502 Bad Gateway: Missing or invalid input
+         */
         get("/user/profile/{id}") {
             val id=call.parameters["id"]?.toInt()
             id?.let { id ->
@@ -23,6 +36,19 @@ fun Routing.protectedProfileRoute(userProfileService: UserProfileService) {
             } ?: call.respond(HttpStatusCode.BadGateway,"Provide Input!!")
         }
 
+        /**
+         * Route to update a user profile
+         * URL: {{base_url}}/user/profile/{id}
+         * Method: PUT
+         *
+         * Body Parameters:
+         * - userProfile: UserProfile (JSON object containing user profile data) (required)
+         *
+         * Responses:
+         * - 200 OK: Update successful
+         * - 400 Bad Request: SQL Exception occurred
+         * - 501 Not Implemented: Update not done
+         */
         put("/user/profile/{id}"){
             try {
                 val user=call.receive<UserProfile>()

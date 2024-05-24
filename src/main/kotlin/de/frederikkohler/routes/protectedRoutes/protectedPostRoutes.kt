@@ -17,9 +17,18 @@ fun Routing.protectedPostRoutes(postService: PostService, userService: UserServi
 
     authenticate {
 
-        // Get Posts
-        // GET http://0.0.0.0:8080/posts?maxPosts=10
-        // Optional query parameter: maxPosts - the maximum number of posts to retrieve (default: 10)
+        /**
+         * Route to retrieve posts
+         * URL: {{base_url}}/posts
+         * Method: GET
+         *
+         * Query Parameters:
+         * - maxPosts: Int (Optional, default is 10)
+         *
+         * Responses:
+         * - 200 OK: List of posts
+         * - 500 Internal Server Error: Failed to retrieve posts
+         */
         get("/posts") {
             val maxPosts = call.request.queryParameters["maxPosts"]?.toIntOrNull() ?: 10
 
@@ -35,9 +44,23 @@ fun Routing.protectedPostRoutes(postService: PostService, userService: UserServi
         }
 
 
-        // Upload Image and save Post
-        // POST http://0.0.0.0:8080/post?userID=1&description=Das ist mein erster Post
-        // Required query parameters: userID, description
+        /**
+         * Route to upload an image and save a post
+         * URL: {{base_url}}/post
+         * Method: POST
+         *
+         * Query Parameters:
+         * - userID: String (User ID of the poster) (required)
+         * - description: String (Description of the post) (required)
+         *
+         * Request Body:
+         * - Multipart data containing images
+         *
+         * Responses:
+         * - 201 Created: Post created successfully
+         * - 400 Bad Request: Missing userID or description, or an error occurred
+         * - 404 Not Found: User not found
+         */
         post("/post") {
             val userID = call.parameters["userID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No User ID")
             val description = call.parameters["description"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No Description")
@@ -81,9 +104,19 @@ fun Routing.protectedPostRoutes(postService: PostService, userService: UserServi
         }
 
 
-        // DELETE POST BY ID
-        // DELETE http://0.0.0.0:8080/post/1
-        // Required path parameter: id (Post ID)
+        /**
+         * Route to delete a post by ID
+         * URL: {{base_url}}/post/{id}
+         * Method: DELETE
+         *
+         * Path Parameters:
+         * - id: Int (ID of the post to delete) (required)
+         *
+         * Responses:
+         * - 200 OK: Post deleted successfully
+         * - 400 Bad Request: Missing or invalid post ID, or post does not exist
+         * - 500 Internal Server Error: An error occurred
+         */
         delete("/post/{id}") {
             val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest, "No ID")
 
@@ -109,10 +142,22 @@ fun Routing.protectedPostRoutes(postService: PostService, userService: UserServi
         }
 
 
-        // LIKE POST BY ID
-        // POST http://0.0.0.0:8080/post/12/like?userID=1
-        // Required path parameter: postID
-        // Required query parameter: userID
+        /**
+         * Route to like a post by ID
+         * URL: {{base_url}}/post/{postID}/like
+         * Method: POST
+         *
+         * Path Parameters:
+         * - postID: Int (ID of the post to like) (required)
+         *
+         * Query Parameters:
+         * - userID: Int (ID of the user liking the post) (required)
+         *
+         * Responses:
+         * - 200 OK: Post liked successfully
+         * - 400 Bad Request: Missing postID or userID, or an error occurred
+         * - 404 Not Found: Post or user not found
+         */
         post("/post/{postID}/like") {
             val parameterPostID = call.parameters["postID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No PostID")
             val receiveUserID = call.parameters["userID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No UserID")
@@ -130,10 +175,22 @@ fun Routing.protectedPostRoutes(postService: PostService, userService: UserServi
         }
 
 
-        // UNLIKE POST BY ID
-        // POST http://0.0.0.0:8080/post/12/unlike?userID=1
-        // Required path parameter: postID
-        // Required query parameter: userID
+        /**
+         * Route to unlike a post by ID
+         * URL: {{base_url}}/post/{postID}/unlike
+         * Method: POST
+         *
+         * Path Parameters:
+         * - postID: Int (ID of the post to unlike) (required)
+         *
+         * Query Parameters:
+         * - userID: Int (ID of the user unliking the post) (required)
+         *
+         * Responses:
+         * - 200 OK: Post unliked successfully
+         * - 400 Bad Request: Missing postID or userID, or an error occurred
+         * - 404 Not Found: Post or user not found
+         */
         post("/post/{postID}/unlike") {
             val parameterPostID = call.parameters["postID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No PostID")
             val receiveUserID = call.parameters["userID"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No UserID")

@@ -30,6 +30,28 @@ fun Routing.publicUserRoutes(
     userProfileService: UserProfileService,
     userVerifyTokenService: UserVerifyTokenService,
 ) {
+
+    /**
+     * Route for user registration
+     * URL: {{base_url}}/register
+     * Method: POST
+     *
+     * Request Body:
+     * {
+     *   "username": "User.Name",
+     *   "password": "***",
+     *   "firstname": "User",
+     *   "lastname": "Name",
+     *   "email": "***",
+     *   "bio": "Optional bio"
+     * }
+     *
+     * Responses:
+     * - 201 Created: User created successfully, verification token returned
+     * - 409 Conflict: User already exists
+     * - 500 Internal Server Error: Error adding user
+     * - 400 Bad Request: SQL Exception or other error
+     */
     post("/register"){
         val receiveUser = call.receive<CreateUser>()
         val userFound = userService.findUserByUsernameOrNull(receiveUser.username)
@@ -70,8 +92,6 @@ fun Routing.publicUserRoutes(
 
                     EmailService().sendUSerVerifyEmail(receiveUser.email, UserVerifyEmail(receiveUser.firstname, generatedToken, "http://0.0.0.0:8080/", receiveUser.username))
 
-                    //call.respondText(generatedToken.toString())
-
                     call.respond(HttpStatusCode.Created, generatedToken)
                 } else {
                     call.respond(HttpStatusCode.InternalServerError, "Error adding user")
@@ -84,6 +104,22 @@ fun Routing.publicUserRoutes(
         }
     }
 
+
+    /**
+     * Route for verifying user account
+     * URL: {{base_url}}/verify
+     * Method: POST
+     *
+     * URL Query Parameters:
+     * - username: String
+     * - verifyCode: Int
+     *
+     * Responses:
+     * - 200 OK: User successfully verified
+     * - 400 Bad Request: Invalid or missing verification code or username
+     * - 404 Not Found: User not found
+     * - 500 Internal Server Error: Failed to update user verification status
+     */
     post("/verify") {
         val username = call.parameters["username"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Username not passed!")
         val verifyCode = call.parameters["verifyCode"]?.toIntOrNull() ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid or missing verify code!")
@@ -113,6 +149,22 @@ fun Routing.publicUserRoutes(
         }
     }
 
+
+    /**
+     * Route for verifying user account and redirecting
+     * URL: {{base_url}}/verify
+     * Method: GET
+     *
+     * URL Query Parameters:
+     * - username: String
+     * - verifyCode: Int
+     *
+     * Responses:
+     * - 302 Found: User successfully verified and redirected
+     * - 400 Bad Request: Invalid or missing verification code or username
+     * - 404 Not Found: User not found
+     * - 500 Internal Server Error: Failed to update user verification status
+     */
     get("/verify") {
         val username = call.parameters["username"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Username not passed!")
         val verifyCode = call.parameters["verifyCode"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid or missing verify code!")
@@ -145,6 +197,21 @@ fun Routing.publicUserRoutes(
         }
     }
 
+    /**
+     * Route for user login
+     * URL: {{base_url}}/login
+     * Method: POST
+     *
+     * Request Body:
+     * {
+     *   "username": "User.Name",
+     *   "password": "***"
+     * }
+     *
+     * Responses:
+     * - 200 OK: Successful login, token returned
+     * - 401 Unauthorized: Invalid password or user not found
+     */
     post("/login") {
         val receivedLoginData = call.receive<Login>()
         val loginPasswordOrNull = userPasswordService.findPasswordByUserNameOrNull(receivedLoginData.username)

@@ -28,16 +28,36 @@ fun Routing.protectedUserRoute(
     userPasswordService: UserPasswordService
 ) {
     authenticate {
-        // Get Posts
-        // GET http://0.0.0.0:8080/users
+        /**
+         * Route to retrieve all users
+         * URL: {{base_url}}/users
+         * Method: GET
+         *
+         * Responses:
+         * - 200 OK: List of users
+         */
         get("/users"){
             val users=userService.getUsers()
             call.respond(HttpStatusCode.OK,users)
         }
 
-
-        // Update Posts
-        // PUT http://0.0.0.0:8080/user/1/username?newusername=frederik.kohler
+        /**
+         * Route to update a user's username
+         * URL: {{base_url}}/user/{id}/username
+         * Method: PUT
+         *
+         * Path Parameters:
+         * - id: Int (ID of the user to update) (required)
+         *
+         * Query Parameters:
+         * - newUsername: String (New username to set) (required)
+         *
+         * Responses:
+         * - 200 OK: Update successful
+         * - 400 Bad Request: Missing id or new username, or SQL exception occurred
+         * - 404 Not Found: User not found
+         * - 501 Not Implemented: Update not done
+         */
         put("/user/{id}/username"){
             try {
                 val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Missing id")
@@ -57,9 +77,22 @@ fun Routing.protectedUserRoute(
             }
         }
 
-
-        // Update Posts
-        // PUT http://0.0.0.0:8080/user/1/password?newPassword=Fr3d3rik!!
+        /**
+         * Route to update a user's password
+         * URL: {{base_url}}/user/{id}/password
+         * Method: PUT
+         *
+         * Path Parameters:
+         * - id: Int (ID of the user to update) (required)
+         *
+         * Query Parameters:
+         * - newPassword: String (New password to set) (required)
+         *
+         * Responses:
+         * - 200 OK: Update successful
+         * - 400 Bad Request: Missing id or new password, or SQL exception occurred
+         * - 501 Not Implemented: Update not done
+         */
         put("/user/{id}/password"){
             try {
                 val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Missing id")
@@ -78,9 +111,19 @@ fun Routing.protectedUserRoute(
             }
         }
 
-
-        // DELETE User by ID
-        // DEL http://0.0.0.0:8080/user/10
+        /**
+         * Route to delete a user by ID
+         * URL: {{base_url}}/user/{id}
+         * Method: DELETE
+         *
+         * Path Parameters:
+         * - id: Int (ID of the user to delete) (required)
+         *
+         * Responses:
+         * - 200 OK: Delete successful
+         * - 400 Bad Request: Invalid user ID
+         * - 404 Not Found: User not found
+         */
         delete("/user/{id}"){
             val id=call.parameters["id"]?.toInt()
 
@@ -104,18 +147,36 @@ fun Routing.protectedUserRoute(
             }
         }
 
-
-        // Search User by String
-        // GET http://0.0.0.0:8080/user/search?q=Frederik
+        /**
+         * Route to search users by query string
+         * URL: {{base_url}}/user/search
+         * Method: GET
+         *
+         * Query Parameters:
+         * - q: String (Query string to search for) (required)
+         *
+         * Responses:
+         * - 200 OK: List of users matching the query
+         */
         get("/user/search"){
             val query=call.request.queryParameters["q"].toString()
             val users=userService.searchUser(query)
             call.respond(HttpStatusCode.OK,users)
         }
 
-
-        // Get User by ID
-        // GET http://0.0.0.0:8080/user/1
+        /**
+         * Route to retrieve a user by ID
+         * URL: {{base_url}}/user/{id}
+         * Method: GET
+         *
+         * Path Parameters:
+         * - id: Int (ID of the user to retrieve) (required)
+         *
+         * Responses:
+         * - 200 OK: User data
+         * - 404 Not Found: User not found
+         * - 502 Bad Gateway: Missing or invalid input
+         */
         get("/user/{id}") {
             val id=call.parameters["id"]?.toInt()
 
@@ -126,9 +187,14 @@ fun Routing.protectedUserRoute(
             } ?: call.respond(HttpStatusCode.BadGateway,"Provide Input!!")
         }
 
-
-        // Logout User
-        // POST http://0.0.0.0:8080/logout
+        /**
+         * Route to logout a user
+         * URL: {{base_url}}/logout
+         * Method: POST
+         *
+         * Responses:
+         * - 200 OK: Logged out successfully
+         */
         post("/logout") {
             call.respond(HttpStatusCode.OK, "Logged out successfully")
         }
