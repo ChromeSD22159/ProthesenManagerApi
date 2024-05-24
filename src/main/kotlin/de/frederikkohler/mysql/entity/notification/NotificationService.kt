@@ -1,4 +1,4 @@
-package de.frederikkohler.mysql.entity
+package de.frederikkohler.mysql.entity.notification
 
 import de.frederikkohler.model.Notification
 import de.frederikkohler.model.Notifications
@@ -12,6 +12,7 @@ interface NotificationService {
     suspend fun addNotification(notification: Notification): Boolean
     suspend fun deleteNotification(notificationId: Int): Boolean
     suspend fun markAsRead(notificationId: Int): Boolean
+    suspend fun markAsUnRead(notificationId: Int): Boolean
     suspend fun hasUnReadNotifications(userID: Int): Boolean
 }
 
@@ -50,6 +51,12 @@ class NotificationServiceDataService: NotificationService {
     override suspend fun markAsRead(notificationId: Int): Boolean = dbQuery {
         Notifications.update({ Notifications.id eq notificationId }) {
             it[isRead] = true
+        } > 0
+    }
+
+    override suspend fun markAsUnRead(notificationId: Int): Boolean = dbQuery {
+        Notifications.update({ Notifications.id eq notificationId }) {
+            it[isRead] = false
         } > 0
     }
 

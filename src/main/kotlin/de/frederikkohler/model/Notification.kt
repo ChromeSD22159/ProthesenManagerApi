@@ -1,7 +1,5 @@
 package de.frederikkohler.model
 
-import de.frederikkohler.model.friendlist.FriendShip
-import de.frederikkohler.model.friendlist.FriendShips
 import de.frederikkohler.model.user.Users
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
