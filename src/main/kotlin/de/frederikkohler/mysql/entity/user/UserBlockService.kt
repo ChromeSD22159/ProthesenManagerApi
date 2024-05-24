@@ -1,13 +1,11 @@
 package de.frederikkohler.mysql.entity.user
 
+import de.frederikkohler.model.user.User
 import de.frederikkohler.model.user.UserBlock
 import de.frederikkohler.model.user.UserBlocks
 import de.frederikkohler.plugins.dbQuery
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
 import java.time.Instant
 import java.time.LocalDateTime
 
@@ -16,6 +14,7 @@ interface UserBlockService {
     suspend fun blockUser(blockerID: Int, blockedID: Int): UserBlock?
     suspend fun unBlockUser(blockerID: Int, blockedID: Int): UserBlock?
     suspend fun deleteBlock(userBlock: UserBlock, blockedID: Int): Boolean
+    suspend fun checkUserIsBlocked(blockerUser: User, blockedUser: User): Boolean
 }
 
 class UserBlockServiceDataService: UserBlockService {
@@ -55,5 +54,12 @@ class UserBlockServiceDataService: UserBlockService {
 
     override suspend fun deleteBlock(userBlock: UserBlock, blockedID: Int): Boolean = dbQuery {
         UserBlocks.deleteWhere { id eq userBlock.id } > 0
+    }
+
+    override suspend fun checkUserIsBlocked(blockerUser: User, blockedUser: User): Boolean = dbQuery {
+        UserBlocks
+            .selectAll()
+            .where { (UserBlocks.blocker_id eq blockerUser.id) and (UserBlocks.blocked_id eq blockedUser.id) }
+            .count() > 0
     }
 }

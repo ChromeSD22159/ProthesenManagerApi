@@ -26,8 +26,8 @@ fun Routing.protectedProfileRoute(userProfileService: UserProfileService) {
          * - 502 Bad Gateway: Missing or invalid input
          */
         get("/user/profile/{id}") {
-            val id=call.parameters["id"]?.toInt()
-            id?.let { id ->
+            val idOrNull=call.parameters["id"]?.toInt()
+            idOrNull?.let { id ->
 
                  userProfileService.getProfileOrNull(id)?.let { user ->
                      call.respond(HttpStatusCode.OK, user)

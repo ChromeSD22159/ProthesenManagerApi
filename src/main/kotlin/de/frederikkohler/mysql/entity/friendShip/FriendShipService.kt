@@ -13,6 +13,7 @@ interface FriendShipService {
     suspend fun findFriendShipByID(id: Int, state: FriendShipState): FriendShip?
     suspend fun updateFriendShip(friendShipId: Int, friendShipState: FriendShipState): Boolean
     suspend fun acceptRequest(friendListID: Int): Boolean
+    suspend fun rejectRequest(friendListID: Int): Boolean
     suspend fun removeFriendShipByFriendShipID(friendListID: Int): Boolean
     suspend fun removeFriendShipByUser(user1: User, user2: User): Boolean
     suspend fun getAllRequestedFriendShips(id: Int): List<FriendShip>
@@ -54,6 +55,12 @@ class FriendShipServiceDataService: FriendShipService {
     override suspend fun acceptRequest(friendListID: Int): Boolean {
         val found = findFriendShipByID(friendListID, FriendShipState.REQUESTED)
         return if (found != null) updateFriendShip(found.id, FriendShipState.ASSUMED)
+        else false
+    }
+
+    override suspend fun rejectRequest(friendListID: Int): Boolean {
+        val found = findFriendShipByID(friendListID, FriendShipState.REQUESTED)
+        return if (found != null) updateFriendShip(found.id, FriendShipState.REJECTED)
         else false
     }
 
