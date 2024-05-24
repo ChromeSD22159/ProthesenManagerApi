@@ -26,6 +26,7 @@ fun Application.configureDatabases(): Database {
         SchemaUtils.create(
             Users,
             UserProfiles,
+            UserBlocks,
             UserRoles,
             UserVerifyTokens,
             UserFollowers,

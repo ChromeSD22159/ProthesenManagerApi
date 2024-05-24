@@ -1,10 +1,9 @@
-package de.frederikkohler.mysql.entity.FirendShip
+package de.frederikkohler.mysql.entity.friendShip
 
 import de.frederikkohler.model.friendlist.FriendShip
 import de.frederikkohler.model.friendlist.FriendShipState
 import de.frederikkohler.model.friendlist.FriendShips
 import de.frederikkohler.model.user.User
-import de.frederikkohler.model.user.Users
 import de.frederikkohler.plugins.dbQuery
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
