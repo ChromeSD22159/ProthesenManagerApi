@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex,
+            flex-direction: row;
+            max-width: 50em;
+            margin: auto
+        }
+        h1 {
+            color: #333333;
+        }
+        p {
+            color: #666666;
+            font-size: 16px;
+        }
+        .verification-code {
+            display: block;
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .verification-link {
+            display: block;
+            margin: 20px 0;
+            font-size: 18px;
+            color: #1a73e8;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Hallo {{firstname}},</h1>
+    <p class="verification-code">Dein Verifizierungs-Code: {{verifyCode}}</p>
+    <a href="{{host}}/verify?username={{username}}&verifyCode={{verifyCode}}" class="verification-link">Verifizierungscode eingeben</a>
+</div>
+</body>
+</html>

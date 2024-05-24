@@ -1,5 +1,4 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
-import org.jetbrains.kotlin.ir.backend.js.compile
+
 import java.io.File
 
 val ktorVersion: String by project
@@ -72,6 +71,8 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("org.flywaydb:flyway-core:9.16.0")
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
+    implementation("javax.mail:javax.mail-api:1.6.2")
+    implementation("com.sun.mail:javax.mail:1.6.2")
     sshAntTask("org.apache.ant:ant-jsch:1.10.14")
 }
 

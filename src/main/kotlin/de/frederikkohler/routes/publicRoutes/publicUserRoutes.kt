@@ -9,8 +9,10 @@ import de.frederikkohler.mysql.entity.user.UserProfileService
 import de.frederikkohler.mysql.entity.user.UserService
 import de.frederikkohler.mysql.entity.user.UserVerifyTokenService
 import de.frederikkohler.routes.protectedRoutes.CreateUser
+import de.frederikkohler.service.mailService.EmailService
 import de.frederikkohler.service.LoginService
 import de.frederikkohler.service.VerificationTokenManager
+import de.frederikkohler.service.mailService.UserVerifyEmail
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -65,6 +67,9 @@ fun Routing.publicUserRoutes(
                             token = generatedToken
                         )
                     )
+
+                    EmailService().sendUSerVerifyEmail(receiveUser.email, UserVerifyEmail(receiveUser.firstname, generatedToken, "http://0.0.0.0:8080/", receiveUser.username))
+
                     //call.respondText(generatedToken.toString())
 
                     call.respond(HttpStatusCode.Created, generatedToken)
@@ -96,6 +101,38 @@ fun Routing.publicUserRoutes(
                 val updateSuccess = userService.updateUser(user)
                 if (updateSuccess) {
                     call.respond(HttpStatusCode.OK, user)
+                    userVerifyTokenService.deleteToken(verifyCode)
+                } else {
+                    call.respond(HttpStatusCode.InternalServerError, "Failed to update user verification status.")
+                }
+            } else {
+                call.respond(HttpStatusCode.OK, "User is already verified")
+            }
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, e.message ?: "An unexpected error occurred")
+        }
+    }
+
+    get("/verify") {
+        val username = call.parameters["username"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Username not passed!")
+        val verifyCode = call.parameters["verifyCode"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid or missing verify code!")
+
+        try {
+            val isVerified = VerificationTokenManager(userService, userVerifyTokenService).validateToken(username, verifyCode)
+            if (!isVerified) {
+                return@get call.respond(HttpStatusCode.BadRequest, "Invalid verification code!")
+            }
+
+            val user = userService.findUserByUsernameOrNull(username) ?: return@get call.respond(HttpStatusCode.NotFound, "User not found!")
+
+            if(!user.verified) {
+                user.verified = true
+                val updateSuccess = userService.updateUser(user)
+                if (updateSuccess) {
+                    //call.respond(HttpStatusCode.OK, user)
+                    //call.respondText("${user.username} is verified!")
+                    // Thread.sleep(1000)
+                    call.respondRedirect("https://www.frederikkohler.de")
                     userVerifyTokenService.deleteToken(verifyCode)
                 } else {
                     call.respond(HttpStatusCode.InternalServerError, "Failed to update user verification status.")
