@@ -1,18 +1,14 @@
 package de.frederikkohler
 
 import de.frederikkohler.plugins.*
+import de.frederikkohler.service.envManager.ENV
+import de.frederikkohler.service.envManager.EnvManager
+import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 
 fun main(args: Array<String>) {
-    /*embeddedServer(
-        Netty,
-        8080,
-        "0.0.0.0",
-        module = Application::module
-    ).start(wait = true)*/
-
     embeddedServer(
         factory = Netty,
         environment = applicationEngineEnvironment {
@@ -26,10 +22,11 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    configureDI(ENV.Development)
     configureDatabases()
-    configureDI()
-   // configureSockets()
+    configureSockets()
     configureSerialization()
     configureSecurity()
     configureRouting()
 }
+

@@ -69,7 +69,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     implementation("io.insert-koin:koin-ktor:$koinKtor")
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
-    implementation("org.flywaydb:flyway-core:9.16.0")
+    implementation("org.flywaydb:flyway-core:9.16.0") 
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
     implementation("javax.mail:javax.mail-api:1.6.2")
     implementation("com.sun.mail:javax.mail:1.6.2")
@@ -105,12 +105,12 @@ ant.withGroovyBuilder {
     "taskdef"(
         "name" to "scp",
         "classname" to "org.apache.tools.ant.taskdefs.optional.ssh.Scp",
-        "classpath" to configurations.get("sshAntTask").asPath
+        "classpath" to configurations["sshAntTask"].asPath
     )
     "taskdef"(
         "name" to "ssh",
         "classname" to "org.apache.tools.ant.taskdefs.optional.ssh.SSHExec",
-        "classpath" to configurations.get("sshAntTask").asPath
+        "classpath" to configurations["sshAntTask"].asPath
     )
 }
 

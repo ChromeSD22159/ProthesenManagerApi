@@ -35,6 +35,8 @@ out/
 ### VS Code ###
 .vscode/
 keys/
-/.env_
-/.env
+/.env.stage
+/.env.development
+/.env.production
 version.txt
+/.env.production

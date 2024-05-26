@@ -12,7 +12,9 @@ import de.frederikkohler.routes.protectedRoutes.CreateUser
 import de.frederikkohler.service.mailService.EmailService
 import de.frederikkohler.service.LoginService
 import de.frederikkohler.service.VerificationTokenManager
+import de.frederikkohler.service.envManager.EnvManager
 import de.frederikkohler.service.mailService.UserVerifyEmail
+import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -29,6 +31,7 @@ fun Routing.publicUserRoutes(
     userPasswordService: UserPasswordService,
     userProfileService: UserProfileService,
     userVerifyTokenService: UserVerifyTokenService,
+    envManager: EnvManager
 ) {
 
     /**
@@ -90,7 +93,7 @@ fun Routing.publicUserRoutes(
                         )
                     )
 
-                    EmailService().sendUSerVerifyEmail(receiveUser.email, UserVerifyEmail(receiveUser.firstname, generatedToken, "http://0.0.0.0:8080/", receiveUser.username))
+                    EmailService(envManager.getEnv()).sendUSerVerifyEmail(receiveUser.email, UserVerifyEmail(receiveUser.firstname, generatedToken, "http://0.0.0.0:8080/", receiveUser.username))
 
                     call.respond(HttpStatusCode.Created, generatedToken)
                 } else {

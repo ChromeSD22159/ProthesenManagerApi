@@ -16,7 +16,7 @@ data class UserVerifyEmail(
 )
 
 class EmailService(
-    private val env: Dotenv = dotenv()
+    val env: Dotenv
 ) {
     fun sendUSerVerifyEmail(to: String, userVerifyEmail: UserVerifyEmail) {
         val username = env["MAIL_USER_NAME"]

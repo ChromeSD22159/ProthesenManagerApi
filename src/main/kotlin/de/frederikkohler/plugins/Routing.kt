@@ -7,6 +7,8 @@ import de.frederikkohler.mysql.entity.user.*
 import de.frederikkohler.routes.protectedRoutes.*
 import de.frederikkohler.routes.publicRoutes.publicUserRoutes
 import de.frederikkohler.routes.publicRoutes.staticRoutes
+import de.frederikkohler.service.envManager.EnvManager
+import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.get
@@ -19,10 +21,11 @@ fun Application.configureRouting(
     userBlockService: UserBlockService =get(),
     postService: PostService =get(),
     notificationService: NotificationService =get(),
-    friendShipService: FriendShipService =get()
+    friendShipService: FriendShipService =get(),
+    envManager: EnvManager =get()
 ) {
     routing {
-        publicUserRoutes(userService, userPasswordService, userProfileService, userVerifyTokenService)
+        publicUserRoutes(userService, userPasswordService, userProfileService, userVerifyTokenService, envManager)
         protectedUserRoute(userService, userProfileService, userPasswordService)
         protectedProfileRoute(userProfileService)
         protectedPostRoutes(postService, userService)

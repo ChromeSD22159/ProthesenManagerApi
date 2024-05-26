@@ -7,11 +7,14 @@ import de.frederikkohler.mysql.entity.notification.NotificationServiceDataServic
 import de.frederikkohler.mysql.entity.post.PostService
 import de.frederikkohler.mysql.entity.post.PostServiceDataService
 import de.frederikkohler.mysql.entity.user.*
+import de.frederikkohler.service.envManager.ENV
+import de.frederikkohler.service.envManager.EnvManager
+import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.server.application.*
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 
-fun Application.configureDI(){
+fun Application.configureDI(dotenv: ENV){
     val appModule= module {
         single<UserService> { UserServiceDataService() }
         single<UserBlockService> { UserBlockServiceDataService() }
@@ -21,6 +24,8 @@ fun Application.configureDI(){
         single<PostService> { PostServiceDataService() }
         single<NotificationService> { NotificationServiceDataService() }
         single<FriendShipService> { FriendShipServiceDataService() }
+        single<PostService> { PostServiceDataService() }
+        single<EnvManager> { EnvManager(dotenv) }
     }
 
     install(Koin){
