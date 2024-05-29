@@ -138,14 +138,22 @@ class PostServiceDataService : PostService {
 
     override suspend fun getPosts(count: Int): List<Post> = dbQuery {
         Posts.innerJoin(Users)
-            .slice(Posts.id, Users.username, Posts.description, Posts.likes, Posts.stars)
+            .slice(
+                Posts.id,
+                Users.username,
+                Posts.description,
+                Posts.likes,
+                Posts.stars,
+                Posts.createdAt,
+                Posts.editAt // Sicherstellen, dass `editAt` enthalten ist
+            )
             .selectAll()
             .limit(count)
             .map { row ->
                 val postId = row[Posts.id]
-                val likesCount = PostLikes.select { PostLikes.postId eq postId }.count()
-                val starsCount = PostStars.select { PostStars.postId eq postId }.count()
-                val images = PostImages.select { PostImages.postId eq postId }
+                val likesCount = PostLikes.selectAll().where { PostLikes.postId eq postId }.count()
+                val starsCount = PostStars.selectAll().where { PostStars.postId eq postId }.count()
+                val images = PostImages.selectAll().where { PostImages.postId eq postId }
                     .map { it[PostImages.imageUrl] }
                 Post(
                     id = postId,
@@ -154,8 +162,8 @@ class PostServiceDataService : PostService {
                     images = images,
                     likesCount = likesCount.toInt(),
                     starsCount = starsCount.toInt(),
-                    editAt = row[Posts.editAt].toString(),
                     createdAt = row[Posts.createdAt].toString(),
+                    editAt = row[Posts.editAt]?.toString() // Umgang mit nullable Feld
                 )
             }
     }
