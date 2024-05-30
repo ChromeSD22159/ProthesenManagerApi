@@ -222,8 +222,8 @@ fun Routing.publicUserRoutes(
 
         if (loginPasswordOrNull != null && userOrNull != null && loginPasswordOrNull == receivedLoginData.password) {
             val token = LoginService.makeToken(userOrNull)
-
-            call.respondText(token)
+            val userID = userOrNull.id
+            call.respond(HttpStatusCode.OK, ResonseToken(token, userID))
         } else {
             if (userOrNull != null) {
                 call.respond(HttpStatusCode.Unauthorized, "Invalid password")
@@ -233,3 +233,6 @@ fun Routing.publicUserRoutes(
         }
     }
 }
+
+@Serializable
+data class ResonseToken(val token: String, val userID: Int)
